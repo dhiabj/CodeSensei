@@ -53,7 +53,7 @@ const onChange = (value) => {
 <template>
   <div class="px-4 pt-4 mb-3 pb-2">
     <label for="language" class="block text-sm/6 font-medium text-white"
-      >Select your preferred language</label
+      >Select your language</label
     >
     <div class="mt-2 grid grid-cols-1 size-fit">
       <select

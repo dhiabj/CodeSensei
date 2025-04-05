@@ -3,7 +3,6 @@ const OpenAI = require('openai');
 const deepseek = new OpenAI({
   baseURL: 'https://api.deepseek.com',
   apiKey: process.env.DEEPSEEK_API_KEY,
-  timeout: 10000,
 });
 
 async function analyzeCode(code) {
@@ -31,7 +30,7 @@ async function analyzeCode(code) {
         },
       ],
       temperature: 0.0,
-      max_tokens: 300,
+      max_tokens: 400,
     });
 
     return response.choices[0].message.content;

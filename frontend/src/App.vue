@@ -12,7 +12,7 @@ const state = reactive({
   review: "",
   isLoading: false,
 });
-const code = ref(`console.log('Hello, world!')`);
+const code = ref(`function sum(a, b) { return a + b }`);
 
 // Configure markdown-it options
 const markdownItOptions = reactive({

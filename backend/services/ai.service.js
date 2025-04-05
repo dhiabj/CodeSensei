@@ -30,7 +30,7 @@ async function analyzeCode(code) {
         },
       ],
       temperature: 0.0,
-      max_tokens: 400,
+      max_tokens: 1000,
     });
 
     return response.choices[0].message.content;

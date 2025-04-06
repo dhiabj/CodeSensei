@@ -38,8 +38,7 @@ async function registerUser(email, password) {
   });
 
   return {
-    message:
-      'Registration successful! Check your email to verify your account.',
+    message: 'Check your email to verify your account.',
   };
 }
 

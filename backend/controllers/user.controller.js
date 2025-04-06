@@ -7,7 +7,7 @@ async function register(req, res) {
     res.status(201).json({
       status: 'success',
       code: 201,
-      data: result,
+      message: result.message,
     });
   } catch (error) {
     const statusCode = error.message.includes('already in use') ? 409 : 500;
@@ -26,7 +26,7 @@ async function login(req, res) {
     res.json({
       status: 'success',
       code: 200,
-      data: { token: result.token },
+      token: result.token,
     });
   } catch (error) {
     let statusCode = 500;

@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+/* NProgress custom styles */
+#nprogress .bar {
+  background: #5dc596 !important;
+  height: 2px;
+}
+
+#nprogress .peg {
+  box-shadow: 0 0 8px rgba(93, 197, 150, 0.7), 0 0 4px rgba(93, 197, 150, 0.4);
+}
+
+#nprogress .spinner {
+  display: none;
+}
+
+#nprogress .spinner-icon {
+  border-top-color: #5dc596 !important;
+  border-left-color: #5dc596 !important;
+}

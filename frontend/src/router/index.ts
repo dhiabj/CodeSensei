@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import NProgress from "nprogress";
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
@@ -36,6 +37,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, _, next) => {
+  NProgress.start();
   const authStore = useAuthStore();
   try {
     await authStore.checkAuthentication();
@@ -50,6 +52,10 @@ router.beforeEach(async (to, _, next) => {
     console.error("Navigation error:", error);
     next(false);
   }
+});
+
+router.afterEach(() => {
+  NProgress.done();
 });
 
 export default router;

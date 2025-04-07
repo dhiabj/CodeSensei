@@ -8,6 +8,13 @@ import router from "./router";
 import { createPinia } from "pinia";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+
+NProgress.configure({
+  showSpinner: false,
+  trickleSpeed: 200,
+});
 
 const app = createApp(App);
 app.use(router);

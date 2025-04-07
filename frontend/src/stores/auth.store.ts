@@ -5,7 +5,6 @@ export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("authToken") || null,
     isAuthenticated: false,
-    isLoading: false,
   }),
   actions: {
     setToken(token: string) {
@@ -18,8 +17,6 @@ export const useAuthStore = defineStore("auth", {
       localStorage.removeItem("authToken");
     },
     async checkAuthentication() {
-      if (this.isLoading) return;
-      this.isLoading = true;
       try {
         if (!this.token) {
           this.isAuthenticated = false;
@@ -32,8 +29,6 @@ export const useAuthStore = defineStore("auth", {
         }
       } catch (error) {
         this.logout();
-      } finally {
-        this.isLoading = false;
       }
     },
   },

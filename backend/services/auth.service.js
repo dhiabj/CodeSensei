@@ -29,7 +29,7 @@ async function registerUser(email, password) {
 
   await user.save();
 
-  const verificationUrl = `${process.env.BASE_URL}/api/user/verify/${verificationToken}`;
+  const verificationUrl = `${process.env.BASE_URL}/api/auth/verify/${verificationToken}`;
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
@@ -77,20 +77,8 @@ async function verifyUserEmail(token) {
   return { message: 'Email verified successfully! You can now log in.' };
 }
 
-async function checkUserToken(token) {
-  try {
-    const decoded = jwt.verify(token, secret);
-    const user = await User.findById(decoded.id);
-    if (!user) throw new Error('User not found');
-    return user;
-  } catch (error) {
-    throw new Error('Invalid token or token expired');
-  }
-}
-
 module.exports = {
   registerUser,
   loginUser,
   verifyUserEmail,
-  checkUserToken,
 };

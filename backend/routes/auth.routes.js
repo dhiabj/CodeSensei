@@ -12,6 +12,6 @@ const router = express.Router();
 router.post('/login', login);
 router.post('/register', register);
 router.get('/verify/:token', verifyEmail);
-router.post('/check-token', isAuthorized, checkToken);
+router.get('/check-token', isAuthorized, checkToken);
 
 module.exports = router;

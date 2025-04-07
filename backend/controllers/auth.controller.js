@@ -1,4 +1,6 @@
 const authService = require('../services/auth.service');
+const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
 
 async function register(req, res) {
   try {
@@ -62,6 +64,8 @@ async function verifyEmail(req, res) {
   }
 }
 
+const verifyToken = promisify(jwt.verify);
+
 async function checkToken(req, res) {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -72,17 +76,20 @@ async function checkToken(req, res) {
         message: 'Unauthorized',
       });
     }
-    const user = await authService.checkUserToken(token);
+    const decoded = await verifyToken(token, process.env.JWT_SECRET);
     res.json({
       status: 'success',
       code: 200,
-      data: user,
+      data: {
+        id: decoded.id,
+        email: decoded.email,
+      },
     });
   } catch (error) {
     res.status(401).json({
       status: 'error',
       code: 401,
-      message: error.message,
+      message: 'Unauthorized',
     });
   }
 }

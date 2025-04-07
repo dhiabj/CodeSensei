@@ -26,7 +26,7 @@ export const authService = {
 
   async checkToken(): Promise<boolean> {
     try {
-      const response = await api.post("/auth/check-token");
+      const response = await api.get("/auth/check-token");
       return response.data.code === 200;
     } catch (error) {
       throw new Error("Token validation failed");

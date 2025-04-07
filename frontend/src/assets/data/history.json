@@ -1,0 +1,62 @@
+[
+    {
+        "id": 1,
+        "content": "**Sample Review 1**\n```javascript\n// Good function implementation\nfunction sum(a, b) {\n  return a + b;\n}\n```",
+        "timestamp": "2025-04-06T00:00:00.000Z",
+        "title": "Sum Function Review"
+    },
+    {
+        "id": 2,
+        "content": "**Sample Review 2**\n```python\ndef multiply(a, b):\n    return a * b\n```\n\n- Consider adding type hints\n- Add docstring",
+        "timestamp": "2025-04-05T00:00:00.000Z",
+        "title": "Multiply Function"
+    },
+    {
+        "id": 3,
+        "content": "**Sample Review 3**\n```javascript\nconst greet = () => console.log('Hello')\n```\n\n- Could accept parameters for more flexibility",
+        "timestamp": "2025-04-04T00:00:00.000Z",
+        "title": "Greeting Function"
+    },
+    {
+        "id": 4,
+        "content": "**Sample Review 4**\n```java\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println(\"Hello, World!\");\n    }\n}\n```\n\n- Looks good\n- Could add comments explaining each part",
+        "timestamp": "2025-04-03T00:00:00.000Z",
+        "title": "Java Hello World"
+    },
+    {
+        "id": 5,
+        "content": "**Sample Review 5**\n```typescript\nfunction greet(name: string): string {\n    return `Hello, ${name}`;\n}\n```\n\n- Well-typed\n- Might want to handle null/undefined inputs",
+        "timestamp": "2025-04-02T00:00:00.000Z",
+        "title": "TypeScript Greeting"
+    },
+    {
+        "id": 6,
+        "content": "**Sample Review 6**\n```csharp\nint Add(int a, int b) {\n    return a + b;\n}\n```\n\n- Add XML documentation\n- Consider edge case handling",
+        "timestamp": "2025-04-01T00:00:00.000Z",
+        "title": "C# Add Function"
+    },
+    {
+        "id": 7,
+        "content": "**Sample Review 7**\n```ruby\ndef subtract(a, b)\n  a - b\nend\n```\n\n- Use consistent indentation\n- Consider adding parameter validation",
+        "timestamp": "2025-03-31T00:00:00.000Z",
+        "title": "Ruby Subtract"
+    },
+    {
+        "id": 8,
+        "content": "**Sample Review 8**\n```go\nfunc Divide(a, b float64) float64 {\n    return a / b\n}\n```\n\n- Should check for division by zero",
+        "timestamp": "2025-03-30T00:00:00.000Z",
+        "title": "Go Divide Function"
+    },
+    {
+        "id": 9,
+        "content": "**Sample Review 9**\n```php\nfunction greet($name) {\n    return \"Hello, $name\";\n}\n```\n\n- Add type declarations (PHP 7+)\n- Consider null checks",
+        "timestamp": "2025-04-06T00:00:00.000Z",
+        "title": "PHP Greet Function"
+    },
+    {
+        "id": 10,
+        "content": "**Sample Review 10**\n```swift\nfunc square(_ num: Int) -> Int {\n    return num * num\n}\n```\n\n- Nicely written\n- Could add unit test cases",
+        "timestamp": "2025-04-05T00:00:00.000Z",
+        "title": "Swift Square Function"
+    }
+]

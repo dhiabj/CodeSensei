@@ -3,12 +3,15 @@ const {
   login,
   register,
   verifyEmail,
-} = require('../controllers/user.controller');
+  checkToken,
+} = require('../controllers/auth.controller');
+const isAuthorized = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
 router.post('/login', login);
 router.post('/register', register);
 router.get('/verify/:token', verifyEmail);
+router.post('/check-token', isAuthorized, checkToken);
 
 module.exports = router;

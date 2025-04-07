@@ -19,9 +19,9 @@ connection.once('open', () => {
 });
 
 const aiRoutes = require('./routes/ai.routes');
-const userRoutes = require('./routes/user.routes');
+const authRoutes = require('./routes/auth.routes');
 app.use('/api/ai', aiRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use(express.static('public'));
 

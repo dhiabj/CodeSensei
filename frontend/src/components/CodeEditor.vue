@@ -51,7 +51,7 @@ const onChange = (value) => {
 </script>
 
 <template>
-  <div class="px-4 pt-4 mb-3 pb-2">
+  <div>
     <label for="language" class="block text-sm/6 font-medium text-white"
       >Select your language</label
     >

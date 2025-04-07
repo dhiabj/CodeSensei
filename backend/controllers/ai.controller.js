@@ -9,7 +9,7 @@ async function reviewCode(req, res) {
     const review = await analyzeCode(code);
     res.status(200).send(review);
   } catch (error) {
-    console.error('AI Controller Error:', error);
+    console.error('Error in reviewCode:', error);
     return res.status(500).json({ error: 'Failed to analyze code' });
   }
 }

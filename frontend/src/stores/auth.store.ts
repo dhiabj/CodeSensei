@@ -1,8 +1,11 @@
+import { authService } from "@/services/auth.service";
 import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     token: localStorage.getItem("authToken") || null,
+    isAuthenticated: false,
+    isLoading: false,
   }),
   actions: {
     setToken(token: string) {
@@ -11,11 +14,27 @@ export const useAuthStore = defineStore("auth", {
     },
     logout() {
       this.token = null;
+      this.isAuthenticated = false;
       localStorage.removeItem("authToken");
     },
-  },
-
-  getters: {
-    isAuthenticated: (state) => !!state.token,
+    async checkAuthentication() {
+      if (this.isLoading) return;
+      this.isLoading = true;
+      try {
+        if (!this.token) {
+          this.isAuthenticated = false;
+          return;
+        }
+        const isValid = await authService.checkToken();
+        this.isAuthenticated = isValid;
+        if (!isValid) {
+          this.logout();
+        }
+      } catch (error) {
+        this.logout();
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
 });

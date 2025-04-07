@@ -1,9 +1,9 @@
-const userService = require('../services/user.service');
+const authService = require('../services/auth.service');
 
 async function register(req, res) {
   try {
     const { email, password } = req.body;
-    const result = await userService.registerUser(email, password);
+    const result = await authService.registerUser(email, password);
     res.status(201).json({
       status: 'success',
       code: 201,
@@ -22,7 +22,7 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = req.body;
-    const result = await userService.loginUser(email, password);
+    const result = await authService.loginUser(email, password);
     res.json({
       status: 'success',
       code: 200,
@@ -44,7 +44,7 @@ async function login(req, res) {
 async function verifyEmail(req, res) {
   try {
     const { token } = req.params;
-    const result = await userService.verifyUserEmail(token);
+    const result = await authService.verifyUserEmail(token);
     res.json({
       status: 'success',
       code: 200,
@@ -62,8 +62,34 @@ async function verifyEmail(req, res) {
   }
 }
 
+async function checkToken(req, res) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({
+        status: 'error',
+        code: 401,
+        message: 'Unauthorized',
+      });
+    }
+    const user = await authService.checkUserToken(token);
+    res.json({
+      status: 'success',
+      code: 200,
+      data: user,
+    });
+  } catch (error) {
+    res.status(401).json({
+      status: 'error',
+      code: 401,
+      message: error.message,
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   verifyEmail,
+  checkToken,
 };

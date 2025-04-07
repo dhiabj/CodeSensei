@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "@/api";
 
 interface AuthCredentials {
   email: string;
@@ -13,17 +13,23 @@ interface SignupResponse {
   message: string;
 }
 
-const API_URL = import.meta.env.VITE_BACKEND_URL;
-
 export const authService = {
   async login(credentials: AuthCredentials): Promise<AuthResponse> {
-    const response = await axios.post<AuthResponse>(`${API_URL}/api/user/login`, credentials);
+    const response = await api.post<AuthResponse>("/auth/login", credentials);
     return response.data;
   },
 
   async register(credentials: AuthCredentials): Promise<SignupResponse> {
-    const response = await axios.post<SignupResponse>(`${API_URL}/api/user/register`, credentials);
-    console.log(response);
+    const response = await api.post<SignupResponse>("/auth/register", credentials);
     return response.data;
+  },
+
+  async checkToken(): Promise<boolean> {
+    try {
+      const response = await api.post("/auth/check-token");
+      return response.data.code === 200;
+    } catch (error) {
+      throw new Error("Token validation failed");
+    }
   },
 };

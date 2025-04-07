@@ -12,6 +12,7 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HomeView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/login",
@@ -29,20 +30,26 @@ const router = createRouter({
       path: "/:catchAll(.*)",
       name: "not-found",
       component: NotFoundView,
+      meta: { requiresAuth: false },
     },
   ],
 });
 
-router.beforeEach((to) => {
+router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore();
-
-  if (to.meta.requiresGuest) {
-    if (authStore.isAuthenticated) {
-      return { name: "home" };
+  try {
+    await authStore.checkAuthentication();
+    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+      next({ name: "login" });
+    } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+      next({ name: "home" });
+    } else {
+      next();
     }
+  } catch (error) {
+    console.error("Navigation error:", error);
+    next(false);
   }
-
-  return true;
 });
 
 export default router;

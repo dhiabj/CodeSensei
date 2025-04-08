@@ -14,8 +14,8 @@ export const useReviewStore = defineStore("review", {
     code: `function sum(a, b) { return a + b }`,
   }),
   actions: {
-    addReview(review: Review) {
-      this.reviewHistory.push(review);
+    addReviewHistory(review: Review) {
+      this.reviewHistory = [...this.reviewHistory, review];
     },
     clearReviews() {
       this.reviewHistory = [];
@@ -28,6 +28,12 @@ export const useReviewStore = defineStore("review", {
     },
     setCode(code: string) {
       this.code = code;
+    },
+    clearSelectedReview() {
+      this.selectedReview = null;
+    },
+    resetCode() {
+      this.code = `function sum(a, b) { return a + b }`;
     },
   },
 });

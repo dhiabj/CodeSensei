@@ -88,7 +88,12 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
                 <li v-for="review in groupedReviews.yesterday" :key="review._id">
                   <RouterLink
                     :to="{ name: 'home', params: { id: review._id } }"
-                    class="flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                    :class="[
+                      isActiveLink(`/${review._id}`)
+                        ? 'bg-gray-800 text-white'
+                        : 'hover:bg-gray-800 hover:text-white',
+                      'flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400',
+                    ]"
                   >
                     <CommandLineIcon class="size-5 shrink-0" />
                     <span class="truncate">{{ review.title }}</span>
@@ -104,7 +109,12 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
                 <li v-for="review in groupedReviews.last7Days" :key="review._id">
                   <RouterLink
                     :to="{ name: 'home', params: { id: review._id } }"
-                    class="flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                    :class="[
+                      isActiveLink(`/${review._id}`)
+                        ? 'bg-gray-800 text-white'
+                        : 'hover:bg-gray-800 hover:text-white',
+                      'flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400',
+                    ]"
                   >
                     <CommandLineIcon class="size-5 shrink-0" />
                     <span class="truncate">{{ review.title }}</span>

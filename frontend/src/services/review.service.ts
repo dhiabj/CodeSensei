@@ -11,4 +11,9 @@ export const reviewService = {
     const response = await api.get<Review[]>("/review/history");
     return response.data;
   },
+
+  async getReviewById(id: string): Promise<Review> {
+    const response = await api.get<Review>(`/review/${id}`);
+    return response.data;
+  },
 };

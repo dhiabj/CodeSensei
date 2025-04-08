@@ -1,49 +1,55 @@
 <script setup lang="ts">
 import { CommandLineIcon, ArrowRightEndOnRectangleIcon } from "@heroicons/vue/24/outline";
 import logo from "@/assets/logo.png";
-import { computed, onMounted, reactive } from "vue";
-import type { Review } from "@/types/review";
+import { computed, onMounted, ref } from "vue";
 import { reviewService } from "@/services/review.service";
 import { filterReviews } from "@/utils/helpers";
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
+import { useReviewStore } from "@/stores/review.store";
+import { useAuthStore } from "@/stores/auth.store";
+import { useRouter } from "vue-router";
 
-interface State {
-  reviewHistory: Review[];
-  isLoading: boolean;
-}
-
-const state = reactive<State>({
-  reviewHistory: [],
-  isLoading: false,
-});
+const isLoading = ref(false);
+const reviewStore = useReviewStore();
+const authStore = useAuthStore();
+const router = useRouter();
 
 onMounted(async () => {
-  state.isLoading = true;
+  isLoading.value = true;
   try {
     const response = await reviewService.getReviewHistory();
-    state.reviewHistory = response;
+    reviewStore.setReviewHistory(response);
   } catch (error) {
     console.error("Error fetching review history:", error);
   } finally {
-    state.isLoading = false;
+    isLoading.value = false;
   }
 });
 
-// const selectedReview = ref<(typeof reviewHistory.value)[number] | null>(null);
+const handleGetReviewById = async (id: string) => {
+  try {
+    const response = await reviewService.getReviewById(id);
+    reviewStore.setSelectedReview(response);
+    reviewStore.setCode(response.code);
+  } catch (error) {
+    console.error("Error fetching review by ID:", error);
+  }
+};
 
-const todayReviews = computed(() => filterReviews(0, state.reviewHistory));
-const yesterdayReviews = computed(() => filterReviews(1, state.reviewHistory));
+const handleLogout = () => {
+  authStore.logout();
+  router.push("/login");
+};
+
+const todayReviews = computed(() => filterReviews(0, reviewStore.reviewHistory));
+const yesterdayReviews = computed(() => filterReviews(1, reviewStore.reviewHistory));
 const last7DaysReviews = computed(() => {
-  return state.reviewHistory.filter((review) => {
+  return reviewStore.reviewHistory.filter((review) => {
     const reviewDate = new Date(review.createdAt);
     const daysDifference = Math.floor((Date.now() - reviewDate.getTime()) / (1000 * 60 * 60 * 24));
     return daysDifference >= 2 && daysDifference <= 7;
   });
 });
-
-// const selectReview = (review: (typeof reviewHistory.value)[number]) => {
-//   selectedReview.value = review;
-// };
 </script>
 
 <template>
@@ -51,7 +57,7 @@ const last7DaysReviews = computed(() => {
     <div class="flex h-16 shrink-0 items-center pt-4">
       <img class="h-10 w-auto" :src="logo" alt="logo" />
     </div>
-    <div v-if="state.isLoading" class="flex items-center justify-center h-full">
+    <div v-if="isLoading" class="flex items-center justify-center h-full">
       <ClipLoader />
     </div>
     <nav v-else class="flex flex-1 flex-col">
@@ -64,6 +70,7 @@ const last7DaysReviews = computed(() => {
               <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li v-for="review in todayReviews" :key="review._id">
                   <a
+                    @click="handleGetReviewById(review._id)"
                     class="cursor-pointer flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400 hover:bg-gray-800 hover:text-white"
                   >
                     <CommandLineIcon class="size-5 shrink-0" />
@@ -79,6 +86,7 @@ const last7DaysReviews = computed(() => {
               <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li v-for="review in yesterdayReviews" :key="review._id">
                   <a
+                    @click="handleGetReviewById(review._id)"
                     class="cursor-pointer flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400 hover:bg-gray-800 hover:text-white"
                   >
                     <CommandLineIcon class="size-5 shrink-0" />
@@ -94,6 +102,7 @@ const last7DaysReviews = computed(() => {
               <ul role="list" class="-mx-2 mt-2 space-y-1">
                 <li v-for="review in last7DaysReviews" :key="review._id">
                   <a
+                    @click="handleGetReviewById(review._id)"
                     class="cursor-pointer flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400 hover:bg-gray-800 hover:text-white"
                   >
                     <CommandLineIcon class="size-5 shrink-0" />
@@ -107,8 +116,8 @@ const last7DaysReviews = computed(() => {
 
         <li class="-mx-6 mt-auto">
           <a
-            href="#"
-            class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800"
+            @click="handleLogout"
+            class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800 cursor-pointer"
           >
             <ArrowRightEndOnRectangleIcon class="size-5 shrink-0" />
             <span class="sr-only">Sign out</span>

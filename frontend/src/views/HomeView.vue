@@ -8,12 +8,11 @@ import "highlight.js/styles/github-dark.css";
 import DOMPurify from "dompurify";
 import SideBar from "@/components/SideBar.vue";
 import { reviewService } from "@/services/review.service";
+import { useReviewStore } from "@/stores/review.store";
 
-const state = reactive({
-  review: "",
-  isLoading: false,
-});
-const code = ref(`function sum(a, b) { return a + b }`);
+const isLoading = ref(false);
+
+const reviewStore = useReviewStore();
 
 // Configure markdown-it options
 const markdownItOptions = reactive({
@@ -31,21 +30,24 @@ const markdownItOptions = reactive({
 });
 
 const handleReviewCode = async () => {
-  if (!code.value) return;
+  if (!reviewStore.code) return;
   try {
-    state.isLoading = true;
+    isLoading.value = true;
     const response = await reviewService.reviewCode({
-      code: code.value,
+      code: reviewStore.code,
     });
-    state.review = response.reviewResult;
+    reviewStore.setSelectedReview(response);
+    reviewStore.addReview(response);
   } catch (error) {
     console.error("Error fetching review:", error);
   } finally {
-    state.isLoading = false;
+    isLoading.value = false;
   }
 };
 
-const sanitizedReview = computed(() => DOMPurify.sanitize(state.review));
+const sanitizedReview = computed(() =>
+  DOMPurify.sanitize(reviewStore.selectedReview?.reviewResult || "")
+);
 </script>
 
 <template>
@@ -57,12 +59,12 @@ const sanitizedReview = computed(() => DOMPurify.sanitize(state.review));
       <div class="grid md:grid-cols-2 h-screen">
         <!-- Left Column (Code Editor) -->
         <div class="p-4 flex flex-col gap-4">
-          <CodeEditor :code="code" @update:code="code = $event" />
+          <CodeEditor />
           <div class="ml-auto">
             <button
               @click="handleReviewCode"
               type="button"
-              :disabled="state.isLoading || !code"
+              :disabled="isLoading || !reviewStore.code"
               class="rounded-md bg-[#5DC596] px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#388E3C] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Review code
@@ -71,7 +73,7 @@ const sanitizedReview = computed(() => DOMPurify.sanitize(state.review));
         </div>
 
         <!-- Right Column (Review Results) -->
-        <div v-if="state.isLoading" class="py-6 bg-black flex items-center justify-center">
+        <div v-if="isLoading" class="py-6 bg-black flex items-center justify-center">
           <PacmanLoader />
         </div>
         <div v-else class="bg-black p-6 overflow-auto">

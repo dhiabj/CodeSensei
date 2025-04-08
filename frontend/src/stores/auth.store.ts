@@ -1,8 +1,13 @@
 import { authService } from "@/services/auth.service";
 import { defineStore } from "pinia";
 
+interface AuthState {
+  token: string | null;
+  isAuthenticated: boolean;
+}
+
 export const useAuthStore = defineStore("auth", {
-  state: () => ({
+  state: (): AuthState => ({
     token: localStorage.getItem("authToken") || null,
     isAuthenticated: false,
   }),

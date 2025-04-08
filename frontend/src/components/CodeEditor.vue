@@ -9,12 +9,9 @@ import { php } from "@codemirror/lang-php";
 import { java } from "@codemirror/lang-java";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { ChevronDownIcon } from "@heroicons/vue/16/solid";
+import { useReviewStore } from "@/stores/review.store";
 
-const props = defineProps({
-  code: {
-    type: String,
-  },
-});
+const reviewStore = useReviewStore();
 
 const emit = defineEmits(["update:code"]);
 
@@ -46,7 +43,7 @@ const log = (eventName, event) => {
 
 // Handler for Codemirror changes
 const onChange = (value) => {
-  emit("update:code", value);
+  reviewStore.setCode(value);
 };
 </script>
 
@@ -77,7 +74,7 @@ const onChange = (value) => {
   </div>
 
   <Codemirror
-    :model-value="props.code"
+    v-model="reviewStore.code"
     placeholder="Code goes here..."
     :style="{ height: '400px' }"
     :autofocus="true"

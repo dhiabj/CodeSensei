@@ -14,7 +14,7 @@ function generateTitle(analysis) {
       .split(' ')
       .slice(0, 3)
       .join(' ');
-  } catch (e) {
+  } catch {
     return 'Code Review Analysis';
   }
 }

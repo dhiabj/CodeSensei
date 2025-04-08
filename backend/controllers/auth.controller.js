@@ -86,6 +86,7 @@ async function checkToken(req, res) {
       },
     });
   } catch (error) {
+    console.error('Error verifying token:', error);
     res.status(401).json({
       status: 'error',
       code: 401,

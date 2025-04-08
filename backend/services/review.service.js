@@ -1,5 +1,5 @@
 const Review = require('../models/review.model');
-const { generateTitle } = require('../utils/title.helper');
+const { generateTitle } = require('../utils/helpers');
 
 async function createReview(userId, code, reviewResult) {
   const title = generateTitle(reviewResult);

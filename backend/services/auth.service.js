@@ -77,8 +77,29 @@ async function verifyUserEmail(token) {
   return { message: 'Email verified successfully! You can now log in.' };
 }
 
+async function findOrCreateGoogleUser(profile) {
+  const user = await User.findOneAndUpdate(
+    { email: profile.emails[0].value },
+    {
+      $setOnInsert: {
+        googleId: profile.id,
+        provider: 'google',
+        isVerified: true,
+        password: undefined,
+      },
+    },
+    {
+      new: true,
+      upsert: true,
+      setDefaultsOnInsert: true,
+    }
+  );
+  return user;
+}
+
 module.exports = {
   registerUser,
   loginUser,
   verifyUserEmail,
+  findOrCreateGoogleUser,
 };

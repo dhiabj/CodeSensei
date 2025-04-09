@@ -8,6 +8,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.store";
+import { API_URL } from "@/api";
 
 const showPassword = ref(false);
 const isLoading = ref(false);
@@ -45,6 +46,10 @@ const handleLogin = async (values: any) => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const signInWithGoogle = () => {
+  window.location.href = `${API_URL}/api/auth/google`;
 };
 </script>
 <template>
@@ -137,9 +142,9 @@ const handleLogin = async (values: any) => {
         </RouterLink>
       </p>
       <div class="mt-6 grid grid-cols-2 gap-4">
-        <a
-          href="#"
-          class="flex w-full items-center justify-center gap-3 rounded-md bg-[#5DC596] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62]"
+        <button
+          @click="signInWithGoogle"
+          class="flex w-full items-center justify-center gap-3 rounded-md bg-[#5DC596] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62] cursor-pointer"
         >
           <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24">
             <path
@@ -160,11 +165,10 @@ const handleLogin = async (values: any) => {
             />
           </svg>
           <span class="text-sm/6 font-semibold">Google</span>
-        </a>
+        </button>
 
-        <a
-          href="#"
-          class="flex w-full items-center justify-center gap-3 rounded-md bg-[#5DC596] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62]"
+        <button
+          class="flex w-full items-center justify-center gap-3 rounded-md bg-[#5DC596] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62] cursor-pointer"
         >
           <svg
             class="size-5 fill-[#24292F]"
@@ -179,7 +183,7 @@ const handleLogin = async (values: any) => {
             />
           </svg>
           <span class="text-sm/6 font-semibold">GitHub</span>
-        </a>
+        </button>
       </div>
     </div>
   </div>

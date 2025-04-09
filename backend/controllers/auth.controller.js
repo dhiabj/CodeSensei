@@ -95,9 +95,29 @@ async function checkToken(req, res) {
   }
 }
 
+function handleGoogleLogin(req, res) {
+  try {
+    if (!req.user) throw new Error('Authentication failed');
+    const token = jwt.sign(
+      { id: req.user.id, email: req.user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.redirect(`${process.env.FRONTEND_URL}/auth-success?token=${token}`);
+  } catch (error) {
+    console.error('Error during Google login:', error);
+    res.status(500).json({
+      status: 'error',
+      code: 500,
+      message: 'Internal Server Error',
+    });
+  }
+}
+
 module.exports = {
   register,
   login,
   verifyEmail,
   checkToken,
+  handleGoogleLogin,
 };

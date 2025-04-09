@@ -5,6 +5,7 @@ import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import NotFoundView from "@/views/NotFoundView.vue";
 import { useAuthStore } from "@/stores/auth.store";
+import AuthSuccessView from "@/views/AuthSuccessView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,12 @@ const router = createRouter({
       name: "register",
       component: RegisterView,
       meta: { requiresGuest: true },
+    },
+    {
+      path: "/auth-success",
+      name: "auth-success",
+      meta: { requiresGuest: true },
+      component: AuthSuccessView,
     },
     {
       path: "/:catchAll(.*)",

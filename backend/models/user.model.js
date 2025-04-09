@@ -11,8 +11,17 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return this.provider === 'local';
+      },
     },
+    provider: {
+      type: String,
+      required: true,
+      enum: ['local', 'google'],
+      default: 'local',
+    },
+    googleId: String,
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
     verificationTokenExpires: Date,

@@ -47,7 +47,8 @@ async function loginUser(email, password) {
   if (!user) throw new Error('Invalid email or password');
   if (!user.isVerified)
     throw new Error('Please verify your email before logging in');
-
+  if (user.provider !== 'local')
+    throw new Error(`Please use ${user.provider} to login`);
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) throw new Error('Invalid email or password');
 
@@ -77,23 +78,43 @@ async function verifyUserEmail(token) {
   return { message: 'Email verified successfully! You can now log in.' };
 }
 
-async function findOrCreateGoogleUser(profile) {
-  const user = await User.findOneAndUpdate(
-    { email: profile.emails[0].value },
-    {
-      $setOnInsert: {
-        googleId: profile.id,
-        provider: 'google',
-        isVerified: true,
-        password: undefined,
-      },
+async function findOrCreateOAuthUser(provider, profile) {
+  const email = profile.emails?.[0]?.value;
+  if (!email) throw new Error(`No email found with ${provider} account`);
+
+  const idField = `${provider}Id`;
+  const updateFields = {
+    $setOnInsert: {
+      [idField]: profile.id,
+      provider,
+      isVerified: true,
+      password: undefined,
     },
-    {
-      new: true,
-      upsert: true,
-      setDefaultsOnInsert: true,
+  };
+
+  const user = await User.findOneAndUpdate({ email }, updateFields, {
+    new: true,
+    upsert: true,
+    setDefaultsOnInsert: true,
+  });
+
+  // Check for existing provider conflict
+  if (!user[idField]) {
+    const existingProviders = [];
+    if (user.googleId) existingProviders.push('Google');
+    if (user.githubId) existingProviders.push('GitHub');
+
+    if (existingProviders.length > 0) {
+      throw new Error(
+        `Email already associated with ${existingProviders.join(
+          ', '
+        )} account(s)`
+      );
+    } else {
+      throw new Error('Email already in use');
     }
-  );
+  }
+
   return user;
 }
 
@@ -101,5 +122,5 @@ module.exports = {
   registerUser,
   loginUser,
   verifyUserEmail,
-  findOrCreateGoogleUser,
+  findOrCreateOAuthUser,
 };

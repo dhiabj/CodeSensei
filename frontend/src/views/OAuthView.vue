@@ -11,12 +11,17 @@ const toast = useToast();
 
 onMounted(() => {
   const token = route.query.token as string;
+  const error = route.query.error as string;
+
   if (token) {
     authStore.setToken(token);
-    toast.success("Authentication successful!");
+    toast.success("Login successful!");
     router.push("/");
+  } else if (error) {
+    toast.error(error);
+    router.push("/login");
   } else {
-    toast.error("Invalid authentication token. Please try again.");
+    toast.error("Invalid OAuth response");
     router.push("/login");
   }
 });

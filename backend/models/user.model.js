@@ -18,10 +18,11 @@ const userSchema = new Schema(
     provider: {
       type: String,
       required: true,
-      enum: ['local', 'google'],
+      enum: ['local', 'google', 'github'],
       default: 'local',
     },
     googleId: String,
+    githubId: String,
     isVerified: { type: Boolean, default: false },
     verificationToken: String,
     verificationTokenExpires: Date,

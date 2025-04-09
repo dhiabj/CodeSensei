@@ -48,8 +48,8 @@ const handleLogin = async (values: any) => {
   }
 };
 
-const signInWithGoogle = () => {
-  window.location.href = `${API_URL}/api/auth/google`;
+const signInWithOAuthProvider = (provider: string) => {
+  window.location.href = `${API_URL}/api/auth/${provider}`;
 };
 </script>
 <template>
@@ -143,7 +143,7 @@ const signInWithGoogle = () => {
       </p>
       <div class="mt-6 grid grid-cols-2 gap-4">
         <button
-          @click="signInWithGoogle"
+          @click="signInWithOAuthProvider('google')"
           class="flex w-full items-center justify-center gap-3 rounded-md bg-[#5DC596] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62] cursor-pointer"
         >
           <svg class="h-5 w-5" aria-hidden="true" viewBox="0 0 24 24">
@@ -168,6 +168,7 @@ const signInWithGoogle = () => {
         </button>
 
         <button
+          @click="signInWithOAuthProvider('github')"
           class="flex w-full items-center justify-center gap-3 rounded-md bg-[#5DC596] px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#328a62] cursor-pointer"
         >
           <svg

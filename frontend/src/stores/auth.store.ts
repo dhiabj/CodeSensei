@@ -5,12 +5,14 @@ import { api } from "@/api";
 interface AuthState {
   token: string | null;
   isInitialized: boolean;
+  isInitializing: boolean;
 }
 
 export const useAuthStore = defineStore("auth", {
   state: (): AuthState => ({
     token: localStorage.getItem("authToken") || null,
     isInitialized: false,
+    isInitializing: false,
   }),
   actions: {
     setToken(token: string) {
@@ -27,6 +29,7 @@ export const useAuthStore = defineStore("auth", {
       router.push("/login");
     },
     async initialize() {
+      this.isInitializing = true;
       try {
         if (!this.token) {
           this.isInitialized = true;
@@ -37,6 +40,8 @@ export const useAuthStore = defineStore("auth", {
       } catch (error) {
         this.clearToken();
         this.isInitialized = true;
+      } finally {
+        this.isInitializing = false;
       }
     },
   },

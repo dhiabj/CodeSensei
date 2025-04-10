@@ -32,9 +32,11 @@ async function login(req, res) {
     });
   } catch (error) {
     let statusCode = 500;
-    if (error.message.includes('verify your email')) statusCode = 403;
-    if (error.message.includes('Invalid email or password')) statusCode = 401;
-
+    if (
+      error.message.includes('verify your email') ||
+      error.message.includes('Invalid email or password')
+    )
+      statusCode = 403;
     res.status(statusCode).json({
       status: 'error',
       code: statusCode,

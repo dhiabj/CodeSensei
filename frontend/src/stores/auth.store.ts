@@ -1,40 +1,47 @@
-import { authService } from "@/services/auth.service";
 import { defineStore } from "pinia";
+import router from "@/router";
+import { api } from "@/api";
 
 interface AuthState {
   token: string | null;
-  isAuthenticated: boolean;
+  isInitialized: boolean;
 }
 
 export const useAuthStore = defineStore("auth", {
   state: (): AuthState => ({
     token: localStorage.getItem("authToken") || null,
-    isAuthenticated: false,
+    isInitialized: false,
   }),
   actions: {
     setToken(token: string) {
       this.token = token;
       localStorage.setItem("authToken", token);
     },
-    logout() {
+    clearToken() {
       this.token = null;
-      this.isAuthenticated = false;
       localStorage.removeItem("authToken");
+      delete api.defaults.headers.common["Authorization"];
     },
-    async checkAuthentication() {
+    logout() {
+      this.clearToken();
+      router.push("/login");
+    },
+    async initialize() {
       try {
         if (!this.token) {
-          this.isAuthenticated = false;
+          this.isInitialized = true;
           return;
         }
-        const isValid = await authService.checkToken();
-        this.isAuthenticated = isValid;
-        if (!isValid) {
-          this.logout();
-        }
+        await api.get("/auth/check-token");
+        this.isInitialized = true;
       } catch (error) {
-        this.logout();
+        this.clearToken();
+        this.isInitialized = true;
       }
     },
+  },
+
+  getters: {
+    isAuthenticated: (state) => !!state.token,
   },
 });

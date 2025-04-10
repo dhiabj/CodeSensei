@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/stores/auth.store";
 import axios from "axios";
 
 export const API_URL = import.meta.env.VITE_BACKEND_URL;
@@ -23,7 +24,8 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("authToken");
+      const authStore = useAuthStore();
+      authStore.logout();
     }
     return Promise.reject(error);
   }

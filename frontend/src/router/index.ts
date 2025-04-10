@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from "vue-router";
-import NProgress from "nprogress";
 import HomeView from "@/views/HomeView.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
@@ -43,26 +42,21 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach(async (to, _, next) => {
-  NProgress.start();
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore();
-  try {
-    await authStore.checkAuthentication();
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      next({ name: "login" });
-    } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-      next({ name: "home" });
-    } else {
-      next();
-    }
-  } catch (error) {
-    console.error("Navigation error:", error);
-    next(false);
-  }
-});
 
-router.afterEach(() => {
-  NProgress.done();
+  // Initialize auth state on first navigation
+  if (!authStore.isInitialized) {
+    await authStore.initialize();
+  }
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ name: "login", query: { redirect: to.fullPath } });
+  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    next({ name: "home" });
+  } else {
+    next();
+  }
 });
 
 export default router;

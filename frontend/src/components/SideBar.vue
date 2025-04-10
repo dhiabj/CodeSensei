@@ -126,15 +126,14 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
         </li>
 
         <li class="-mx-6 mt-auto">
-          <RouterLink
-            to="/login"
+          <div
             @click="handleLogout"
-            class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800"
+            class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800 cursor-pointer"
           >
             <ArrowRightEndOnRectangleIcon class="size-5 shrink-0" />
             <span class="sr-only">Sign out</span>
             <span aria-hidden="true">Sign out</span>
-          </RouterLink>
+          </div>
         </li>
       </ul>
     </nav>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NProgress from "nprogress";
 import CodeEditor from "@/components/CodeEditor.vue";
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
@@ -21,14 +22,14 @@ watch(
   async (newId) => {
     if (newId) {
       try {
-        isLoading.value = true;
+        NProgress.start();
         const response = await reviewService.getReviewById(newId as string);
         reviewStore.setSelectedReview(response);
         reviewStore.setCode(response.code);
       } catch (error) {
         console.error("Error fetching review:", error);
       } finally {
-        isLoading.value = false;
+        NProgress.done();
       }
     } else {
       reviewStore.clearSelectedReview();
@@ -67,6 +68,7 @@ const handleReviewCode = async () => {
     const response = await reviewService.reviewCode({
       code: reviewStore.code,
     });
+    reviewStore.clearSelectedReview();
     reviewStore.addReviewHistory(response);
     router.push({ name: "home", params: { id: response._id } });
   } catch (error) {

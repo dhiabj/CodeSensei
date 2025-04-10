@@ -2,6 +2,8 @@
 
 ![Screenshot 2025-04-10 154652](https://github.com/user-attachments/assets/44dbc973-68db-425a-ad8c-d4b88711e124)
 
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://code-sensei-five.vercel.app/) 
+
 Code Sensei is an intelligent code review application that helps developers improve their code quality through AI-powered analysis. Built with modern web technologies, it supports multiple programming languages and provides actionable feedback using Deepseek's AI capabilities.
 
 ## Features

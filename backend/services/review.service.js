@@ -1,12 +1,13 @@
 const Review = require('../models/review.model');
 const { generateTitle } = require('../utils/helpers');
 
-async function createReview(userId, code, reviewResult) {
+async function createReview(userId, code, language, reviewResult) {
   const title = generateTitle(reviewResult);
 
   return Review.create({
     user: userId,
     code,
+    language,
     reviewResult,
     title,
   });

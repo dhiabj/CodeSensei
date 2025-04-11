@@ -9,6 +9,7 @@ import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import Vue3Lottie from "vue3-lottie";
 
 NProgress.configure({
   showSpinner: false,
@@ -31,4 +32,4 @@ app.use(VueCodemirror, {
   // ...
 });
 
-app.mount("#app");
+app.use(Vue3Lottie).mount("#app");

@@ -2,7 +2,8 @@
 import NProgress from "nprogress";
 import CodeEditor from "@/components/CodeEditor.vue";
 import { computed, onMounted, reactive, ref, watch } from "vue";
-import PacmanLoader from "vue-spinner/src/PacmanLoader.vue";
+import { Vue3Lottie } from "vue3-lottie";
+import ReviewingCodeJSON from "@/assets/animations/ReviewingCodeJSON.json";
 import VueMarkdown from "vue-markdown-render";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
@@ -26,6 +27,7 @@ watch(
         const response = await reviewService.getReviewById(newId as string);
         reviewStore.setSelectedReview(response);
         reviewStore.setCode(response.code);
+        reviewStore.setSelectedLanguage(response.language);
       } catch (error) {
         console.error("Error fetching review:", error);
       } finally {
@@ -34,6 +36,7 @@ watch(
     } else {
       reviewStore.clearSelectedReview();
       reviewStore.resetCode();
+      reviewStore.resetSelectedLanguage();
     }
   },
   { immediate: true }
@@ -43,6 +46,7 @@ onMounted(() => {
   if (!route.params.id) {
     reviewStore.clearSelectedReview();
     reviewStore.resetCode();
+    reviewStore.resetSelectedLanguage();
   }
 });
 
@@ -67,6 +71,7 @@ const handleReviewCode = async () => {
     isLoading.value = true;
     const response = await reviewService.reviewCode({
       code: reviewStore.code,
+      language: reviewStore.selectedLanguage,
     });
     reviewStore.clearSelectedReview();
     reviewStore.addReviewHistory(response);
@@ -107,7 +112,7 @@ const sanitizedReview = computed(() =>
 
         <!-- Right Column (Review Results) -->
         <div v-if="isLoading" class="py-6 bg-black flex items-center justify-center">
-          <PacmanLoader />
+          <Vue3Lottie :animationData="ReviewingCodeJSON" :height="200" :width="200" />
         </div>
         <div v-else class="bg-black p-6 overflow-auto">
           <VueMarkdown :source="sanitizedReview" :options="markdownItOptions" class="text-white" />

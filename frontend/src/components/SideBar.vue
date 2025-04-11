@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {
-  CommandLineIcon,
   ArrowRightEndOnRectangleIcon,
-  ChatBubbleBottomCenterTextIcon,
+  Bars3CenterLeftIcon,
+  CommandLineIcon,
 } from "@heroicons/vue/24/outline";
 import logo from "@/assets/logo.png";
 import { computed, onMounted, ref } from "vue";
@@ -11,11 +11,13 @@ import { filterReviewsByDate } from "@/utils/helpers";
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 import { useReviewStore } from "@/stores/review.store";
 import { useAuthStore } from "@/stores/auth.store";
-import { RouterLink, useRoute } from "vue-router";
+import { RouterLink } from "vue-router";
+import HistoryGroup from "./HistoryGroup.vue";
 
 const isLoading = ref(false);
 const reviewStore = useReviewStore();
 const authStore = useAuthStore();
+const isSidebarOpen = ref(true);
 
 onMounted(async () => {
   isLoading.value = true;
@@ -33,108 +35,79 @@ const handleLogout = () => {
   authStore.logout();
 };
 
-const isActiveLink = (routePath: string) => {
-  const route = useRoute();
-  return route.path === routePath;
+const toggleSideBar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value;
 };
 
 const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHistory));
 </script>
 
 <template>
-  <div class="flex flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 w-64">
-    <div class="flex h-16 shrink-0 items-center pt-4">
-      <img class="h-10 w-auto" :src="logo" alt="logo" />
+  <div
+    :class="[
+      isSidebarOpen ? 'w-64 px-6' : 'w-20 items-center',
+      'hidden sm:flex flex-col gap-y-5 overflow-y-auto overflow-x-hidden bg-gray-900 relative transition-all duration-300 ease-in-out',
+    ]"
+  >
+    <div class="flex items-center justify-between">
+      <div class="flex h-16 shrink-0 items-center pt-4">
+        <img :class="[isSidebarOpen ? 'md:h-10' : 'md:h-8', 'h-8 w-auto']" :src="logo" alt="logo" />
+      </div>
+
+      <div
+        class="flex items-center hover:bg-gray-800 text-gray-400 hover:text-white p-2 rounded-md cursor-pointer"
+        v-if="isSidebarOpen"
+        @click="toggleSideBar"
+      >
+        <Bars3CenterLeftIcon class="size-5 shrink-0" />
+      </div>
     </div>
+
+    <div
+      class="flex items-center hover:bg-gray-800 text-gray-400 hover:text-white p-3 rounded-md cursor-pointer"
+      v-if="!isSidebarOpen"
+      @click="toggleSideBar"
+    >
+      <Bars3CenterLeftIcon class="size-5 shrink-0" />
+    </div>
+
     <RouterLink
       to="/"
-      class="flex items-center rounded-md bg-[#5DC596] text-white text-sm font-semibold p-3 w-35 hover:bg-[#328a62]"
+      :class="[
+        isSidebarOpen
+          ? 'w-32 rounded-md bg-[#5DC596] text-white text-sm font-semibold hover:bg-[#328a62]'
+          : 'hover:bg-gray-800 text-gray-400 hover:text-white rounded-md',
+        'flex items-center p-3',
+      ]"
     >
-      <ChatBubbleBottomCenterTextIcon class="size-5 shrink-0" />
-      <span class="ml-2">New review</span>
+      <CommandLineIcon class="size-5 shrink-0" />
+      <span v-if="isSidebarOpen" class="ml-2">New review</span>
     </RouterLink>
     <div v-if="isLoading" class="flex items-center justify-center h-full">
       <ClipLoader />
     </div>
     <nav v-else class="flex flex-1 flex-col">
       <ul role="list" class="flex flex-1 flex-col">
-        <li>
+        <li v-if="isSidebarOpen">
           <ul role="list" class="-mx-2 mt-2 space-y-1">
-            <!-- Today -->
-            <li v-if="groupedReviews.today.length">
-              <div class="text-xs/6 font-semibold text-gray-400 mt-4">Today</div>
-              <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li v-for="review in groupedReviews.today" :key="review._id">
-                  <RouterLink
-                    :to="{ name: 'home', params: { id: review._id } }"
-                    :class="[
-                      isActiveLink(`/${review._id}`)
-                        ? 'bg-gray-800 text-white'
-                        : 'hover:bg-gray-800 hover:text-white',
-                      'flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400',
-                    ]"
-                  >
-                    <CommandLineIcon class="size-5 shrink-0" />
-                    <span class="truncate">{{ review.title }}</span>
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
-
-            <!-- Yesterday -->
-            <li v-if="groupedReviews.yesterday.length">
-              <div class="text-xs/6 font-semibold text-gray-400 mt-4">Yesterday</div>
-              <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li v-for="review in groupedReviews.yesterday" :key="review._id">
-                  <RouterLink
-                    :to="{ name: 'home', params: { id: review._id } }"
-                    :class="[
-                      isActiveLink(`/${review._id}`)
-                        ? 'bg-gray-800 text-white'
-                        : 'hover:bg-gray-800 hover:text-white',
-                      'flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400',
-                    ]"
-                  >
-                    <CommandLineIcon class="size-5 shrink-0" />
-                    <span class="truncate">{{ review.title }}</span>
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
-
-            <!-- Last 7 Days -->
-            <li v-if="groupedReviews.last7Days.length">
-              <div class="text-xs/6 font-semibold text-gray-400 mt-4">Last 7 Days</div>
-              <ul role="list" class="-mx-2 mt-2 space-y-1">
-                <li v-for="review in groupedReviews.last7Days" :key="review._id">
-                  <RouterLink
-                    :to="{ name: 'home', params: { id: review._id } }"
-                    :class="[
-                      isActiveLink(`/${review._id}`)
-                        ? 'bg-gray-800 text-white'
-                        : 'hover:bg-gray-800 hover:text-white',
-                      'flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400',
-                    ]"
-                  >
-                    <CommandLineIcon class="size-5 shrink-0" />
-                    <span class="truncate">{{ review.title }}</span>
-                  </RouterLink>
-                </li>
-              </ul>
-            </li>
+            <HistoryGroup title="Today" :reviews="groupedReviews.today" />
+            <HistoryGroup title="Yesterday" :reviews="groupedReviews.yesterday" />
+            <HistoryGroup title="Last 7 Days" :reviews="groupedReviews.last7Days" />
           </ul>
         </li>
 
-        <li class="-mx-6 mt-auto">
-          <div
-            @click="handleLogout"
-            class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800 cursor-pointer"
-          >
-            <ArrowRightEndOnRectangleIcon class="size-5 shrink-0" />
-            <span class="sr-only">Sign out</span>
-            <span aria-hidden="true">Sign out</span>
-          </div>
-        </li>
+        <div
+          @click="handleLogout"
+          :class="[
+            isSidebarOpen
+              ? '-mx-6 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800'
+              : 'hover:bg-gray-800 text-gray-400 hover:text-white p-3 rounded-md mb-3',
+            'mt-auto flex items-center cursor-pointer',
+          ]"
+        >
+          <ArrowRightEndOnRectangleIcon class="size-5 shrink-0" />
+          <span class="ml-2 whitespace-nowrap" v-if="isSidebarOpen">Sign out</span>
+        </div>
       </ul>
     </nav>
   </div>

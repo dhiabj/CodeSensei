@@ -1,5 +1,5 @@
 <script setup>
-import { ref, shallowRef, computed } from "vue";
+import { shallowRef, computed } from "vue";
 import { Codemirror } from "vue-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { html } from "@codemirror/lang-html";
@@ -13,10 +13,6 @@ import { useReviewStore } from "@/stores/review.store";
 
 const reviewStore = useReviewStore();
 
-const emit = defineEmits(["update:code"]);
-
-const selectedLanguage = ref("javascript");
-
 // Available language extensions
 const languageMap = {
   javascript: javascript(),
@@ -27,8 +23,17 @@ const languageMap = {
   java: java(),
 };
 
+const selectedLanguage = computed({
+  get() {
+    return reviewStore.selectedLanguage;
+  },
+  set(value) {
+    reviewStore.setSelectedLanguage(value);
+  },
+});
+
 // Dynamic extensions based on selected language
-const extensions = computed(() => [languageMap[selectedLanguage.value], oneDark]);
+const extensions = computed(() => [languageMap[reviewStore.selectedLanguage], oneDark]);
 
 // Editor instance reference
 const view = shallowRef();

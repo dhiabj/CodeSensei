@@ -5,7 +5,11 @@ const deepseek = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
-async function analyzeCode(code) {
+async function analyzeCode(code, language) {
+  const prompt = `Please review the following ${language || 'code'}:
+        Code:\n\n${code}\n\n
+        Provide your analysis in clear sections.`;
+
   const response = await deepseek.chat.completions.create({
     model: 'deepseek-chat',
     messages: [
@@ -25,7 +29,7 @@ async function analyzeCode(code) {
       },
       {
         role: 'user',
-        content: `Review this code: ${code}`,
+        content: prompt,
       },
     ],
     temperature: 0.0,

@@ -1,15 +1,8 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+const transporter = require('../config/email');
+const emailTemplates = require('../utils/emailTemplates');
 
 const secret = process.env.JWT_SECRET;
 
@@ -30,11 +23,12 @@ async function registerUser(email, password) {
   await user.save();
 
   const verificationUrl = `${process.env.BASE_URL}/api/auth/verify/${verificationToken}`;
+
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'Verify your email',
-    html: `<p>Click the link below to verify your account:</p><a href="${verificationUrl}">Verify Email</a>`,
+    subject: 'Verify Your CodeSensei Account',
+    html: emailTemplates.verificationEmail(verificationUrl),
   });
 
   return {

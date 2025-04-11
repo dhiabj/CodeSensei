@@ -13,6 +13,10 @@ const reviewSchema = new Schema(
       type: String,
       required: true,
     },
+    language: {
+      type: String,
+      required: true,
+    },
     reviewResult: {
       type: String,
       required: true,

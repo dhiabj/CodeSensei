@@ -18,14 +18,14 @@ async function login(req, res) {
     res.cookie('accessToken', result.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: 'None',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: 'None',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.status(200).json({ message: 'Logged in successfully!' });
@@ -68,14 +68,14 @@ async function refreshToken(req, res) {
     res.cookie('accessToken', response.newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: 'None',
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie('refreshToken', response.newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Strict',
+      sameSite: 'None',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({ message: 'Tokens refreshed' });
@@ -93,8 +93,16 @@ async function logout(req, res) {
   } catch (error) {
     console.error('Error during logout', error);
   } finally {
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+    });
     res.status(200).json({ message: 'Logged out successfully' });
   }
 }

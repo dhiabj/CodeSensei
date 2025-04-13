@@ -1,12 +1,12 @@
 import { api } from "@/api";
 
-interface AuthCredentials {
+export interface AuthCredentials {
   email: string;
   password: string;
 }
 
 interface AuthResponse {
-  token: string;
+  message: string;
 }
 
 interface SignupResponse {

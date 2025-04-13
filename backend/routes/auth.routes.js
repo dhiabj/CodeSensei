@@ -1,20 +1,23 @@
 const express = require('express');
 const passport = require('passport');
-const jwt = require('jsonwebtoken');
 const {
   login,
   register,
   verifyEmail,
-  checkToken,
+  refreshToken,
+  logout,
 } = require('../controllers/auth.controller');
 const isAuthorized = require('../middlewares/auth.middleware');
+const { oauthTokenGen } = require('../services/auth.service');
 
 const router = express.Router();
 
 router.post('/login', login);
 router.post('/register', register);
 router.get('/verify/:token', verifyEmail);
-router.get('/check-token', isAuthorized, checkToken);
+router.get('/protected', isAuthorized, (req, res) => {
+  res.send('Protected data');
+});
 
 router.get('/:provider', (req, res, next) => {
   const provider = req.params.provider;
@@ -31,24 +34,44 @@ router.get('/:provider', (req, res, next) => {
   passport.authenticate(provider, providersConfig[provider])(req, res, next);
 });
 
+router.post('/refresh', refreshToken);
+router.post('/logout', logout);
+
 router.get('/:provider/callback', (req, res, next) => {
   passport.authenticate(
     req.params.provider,
     { session: false },
-    (err, user, info) => {
-      if (err || !user) {
-        console.error('OAuth error:', err || info);
-        return res.redirect(
-          `${process.env.FRONTEND_URL}/oauth?error=${err.message}`
-        );
+    async (err, user) => {
+      try {
+        if (err || !user) {
+          console.error('OAuth error:', err);
+          const errorMessage = encodeURIComponent(err.message);
+          return res.redirect(
+            `${process.env.FRONTEND_URL}/oauth?error=${errorMessage}`
+          );
+        }
+        const { accessToken, refreshToken } = await oauthTokenGen(user._id);
+
+        res.cookie('accessToken', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Strict',
+          maxAge: 15 * 60 * 1000, // 15 minutes
+        });
+
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'Strict',
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
+
+        res.redirect(`${process.env.FRONTEND_URL}/`);
+      } catch (error) {
+        console.error('OAuth callback error:', error);
+        const errorMessage = encodeURIComponent(error.message);
+        res.redirect(`${process.env.FRONTEND_URL}/oauth?error=${errorMessage}`);
       }
-      // If authentication is successful:
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
-      res.redirect(`${process.env.FRONTEND_URL}/oauth?token=${token}`);
     }
   )(req, res, next);
 });

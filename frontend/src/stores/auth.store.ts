@@ -1,52 +1,49 @@
 import { defineStore } from "pinia";
-import router from "@/router";
 import { api } from "@/api";
+import router from "@/router";
+import { authService, type AuthCredentials } from "@/services/auth.service";
 
 interface AuthState {
-  token: string | null;
   isInitialized: boolean;
   isInitializing: boolean;
+  isAuthenticated: boolean;
 }
 
 export const useAuthStore = defineStore("auth", {
   state: (): AuthState => ({
-    token: localStorage.getItem("authToken") || null,
     isInitialized: false,
     isInitializing: false,
+    isAuthenticated: false,
   }),
   actions: {
-    setToken(token: string) {
-      this.token = token;
-      localStorage.setItem("authToken", token);
+    async login(values: AuthCredentials) {
+      const response = await authService.login(values);
+      this.isAuthenticated = true;
+      router.push("/");
+      return response.message;
     },
-    clearToken() {
-      this.token = null;
-      localStorage.removeItem("authToken");
-      delete api.defaults.headers.common["Authorization"];
-    },
-    logout() {
-      this.clearToken();
-      router.push("/login");
+    async logout() {
+      try {
+        await api.post("/auth/logout");
+      } catch (error) {
+        console.error("Logout failed:", error);
+      } finally {
+        this.isAuthenticated = false;
+        router.push("/login");
+      }
     },
     async initialize() {
-      this.isInitializing = true;
       try {
-        if (!this.token) {
-          this.isInitialized = true;
-          return;
-        }
-        await api.get("/auth/check-token");
+        this.isInitializing = true;
+        await api.get("/auth/protected");
         this.isInitialized = true;
+        this.isAuthenticated = true;
       } catch (error) {
-        this.clearToken();
-        this.isInitialized = true;
+        this.isAuthenticated = false;
       } finally {
+        this.isInitialized = true;
         this.isInitializing = false;
       }
     },
-  },
-
-  getters: {
-    isAuthenticated: (state) => !!state.token,
   },
 });

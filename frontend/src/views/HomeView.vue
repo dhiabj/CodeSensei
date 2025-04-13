@@ -112,7 +112,7 @@ const sanitizedReview = computed(() =>
 
         <!-- Right Column (Review Results) -->
         <div v-if="isLoading" class="py-6 bg-black flex items-center justify-center">
-          <Vue3Lottie :animationData="ReviewingCodeJSON" :height="200" :width="200" />
+          <Vue3Lottie :animationData="ReviewingCodeJSON" :height="150" :width="150" />
         </div>
         <div v-else class="bg-black p-6 overflow-auto">
           <VueMarkdown :source="sanitizedReview" :options="markdownItOptions" class="text-white" />

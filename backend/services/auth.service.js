@@ -3,8 +3,12 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const transporter = require('../config/email');
 const emailTemplates = require('../utils/emailTemplates');
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require('../utils/helpers');
 
-const secret = process.env.JWT_SECRET;
+const secret = process.env.EMAIL_TOKEN_SECRET;
 
 async function registerUser(email, password) {
   const existingUser = await User.findOne({ email });
@@ -46,11 +50,13 @@ async function loginUser(email, password) {
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) throw new Error('Invalid email or password');
 
-  const token = jwt.sign({ id: user._id, email: user.email }, secret, {
-    expiresIn: '1d',
-  });
+  const accessToken = generateAccessToken(user._id);
+  const { refreshToken, jti } = generateRefreshToken(user._id);
 
-  return { token };
+  user.refreshTokenJti = jti;
+  await user.save();
+
+  return { accessToken, refreshToken };
 }
 
 async function verifyUserEmail(token) {
@@ -112,9 +118,50 @@ async function findOrCreateOAuthUser(provider, profile) {
   return user;
 }
 
+async function refresh(refreshToken) {
+  const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  const user = await User.findById(decoded.id);
+  if (!user || user.refreshTokenJti !== decoded.jti) {
+    throw new Error('Invalid refresh token');
+  }
+
+  const newAccessToken = generateAccessToken(user._id);
+  const { refreshToken: newRefreshToken, jti: newJti } = generateRefreshToken(
+    user._id
+  );
+
+  user.refreshTokenJti = newJti;
+  await user.save();
+
+  return { newAccessToken, newRefreshToken };
+}
+
+async function logoutUser(refreshToken) {
+  const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  const user = await User.findById(decoded.id);
+  if (user) {
+    user.refreshTokenJti = null;
+    await user.save();
+  }
+}
+
+async function oauthTokenGen(userId) {
+  // Generate tokens using your existing functions
+  const accessToken = generateAccessToken(userId);
+  const { refreshToken, jti } = generateRefreshToken(userId);
+
+  // Update user with refresh token ID
+  await User.findByIdAndUpdate(userId, { refreshTokenJti: jti });
+
+  return { accessToken, refreshToken };
+}
+
 module.exports = {
   registerUser,
   loginUser,
   verifyUserEmail,
   findOrCreateOAuthUser,
+  refresh,
+  logoutUser,
+  oauthTokenGen,
 };

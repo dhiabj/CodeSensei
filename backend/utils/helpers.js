@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+
 function generateTitle(analysis) {
   try {
     const issuesSection = analysis.split('🔍 Issues')[1] || analysis;
@@ -19,4 +22,18 @@ function generateTitle(analysis) {
   }
 }
 
-module.exports = { generateTitle };
+function generateAccessToken(id) {
+  return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, {
+    expiresIn: '15m',
+  });
+}
+
+function generateRefreshToken(id) {
+  const jti = crypto.randomBytes(64).toString('hex');
+  const refreshToken = jwt.sign({ id, jti }, process.env.REFRESH_TOKEN_SECRET, {
+    expiresIn: '7d',
+  });
+  return { refreshToken, jti };
+}
+
+module.exports = { generateTitle, generateAccessToken, generateRefreshToken };

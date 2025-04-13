@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import logo from "@/assets/logo.png";
-import { RouterLink, useRouter } from "vue-router";
+import { RouterLink, useRoute, useRouter } from "vue-router";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
-import { authService } from "@/services/auth.service";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.store";
 import { API_URL } from "@/api";
@@ -14,8 +13,27 @@ const showPassword = ref(false);
 const isLoading = ref(false);
 
 const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const authStore = useAuthStore();
+
+onMounted(() => {
+  const type = route.query.type as string;
+  if (!type) return;
+  switch (type) {
+    case "confirm":
+      toast.success("Email verified successfully! You can now log in.");
+      break;
+    case "expired":
+      toast.error("Verification link expired");
+      break;
+    case "invalid":
+      toast.error("Invalid verification link");
+      break;
+    default:
+      toast.error("Email verification failed");
+  }
+});
 
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value;
@@ -36,9 +54,7 @@ const schema = yup.object({
 const handleLogin = async (values: any) => {
   try {
     isLoading.value = true;
-    const { token } = await authService.login(values);
-    authStore.setToken(token);
-    toast.success("Login successful!");
+    await authStore.login(values);
     router.push("/");
   } catch (error: any) {
     console.error(error);

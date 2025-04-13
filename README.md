@@ -30,17 +30,20 @@ Code Sensei is an intelligent code review application that helps developers impr
 - **Pinia** - State management
 - **CodeMirror 6** - Code editor component
 - **Vee-Validate/Yup** - Form validation
-- **Tailwind CSS** - Styling framework
+- **Tailwind CSS** - Responsive styling framework
+- **vue3-lottie** - Lottie animation integration
+- **nprogress** - Page loading progress bar
+- **vue-toastification** - Toast notification system
 - **Axios** - HTTP client with interceptors
 - **Vite** - Build tool
-- **OAuth 2.0** - Google & GitHub authentication
 
 ### Backend
 - **Node.js** - Runtime environment
 - **Express.js** - Web framework with middleware
-- **Passport.js** - OAuth authentication
+- **Passport.js** - Google & GitHub authentication
 - **Mongoose** - MongoDB object modeling
 - **JWT** - Secure token authentication
+- **Nodemailer** - Email verification system
 - **Deepseek API** - AI analysis engine
 - **MongoDB Atlas** - Cloud database service
 - **CORS** - Cross-origin resource sharing
@@ -56,6 +59,7 @@ Code Sensei is an intelligent code review application that helps developers impr
 - Google OAuth Client ID/Secret
 - GitHub OAuth Client ID/Secret
 - JWT Secret Key
+- credentials for email service
 
 ### Installation
 

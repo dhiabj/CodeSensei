@@ -1,24 +1,36 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
+const DEFAULT_TITLE = 'Code Review Analysis';
+const ISSUES_HEADER = '🔍 Issues';
+
 function generateTitle(analysis) {
+  if (typeof analysis !== 'string' || !analysis.trim()) {
+    return DEFAULT_TITLE;
+  }
+
   try {
-    const issuesSection = analysis.split('🔍 Issues')[1] || analysis;
-    const firstIssue = issuesSection
+    const issuesSection = analysis.split(ISSUES_HEADER)[1] || analysis;
+    const firstIssueLine = issuesSection
       .split('\n')
-      .find((line) => line.trim().match(/^[-*]/));
+      .find((line) => line.trim().match(/^[-*]\s/));
 
-    if (!firstIssue) return 'Code Review Analysis';
+    if (!firstIssueLine) return DEFAULT_TITLE;
 
-    return firstIssue
+    const issueText = firstIssueLine
       .replace(/^[-*]\s*/, '')
       .split(/[,.:]/)[0]
-      .trim()
+      .trim();
+
+    const meaningfulWords = issueText
       .split(' ')
-      .slice(0, 3)
-      .join(' ');
-  } catch {
-    return 'Code Review Analysis';
+      .filter((word) => word.length > 3)
+      .slice(0, 4);
+
+    return meaningfulWords.join(' ') || DEFAULT_TITLE;
+  } catch (error) {
+    console.error('Title generation failed:', error);
+    return DEFAULT_TITLE;
   }
 }
 

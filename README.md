@@ -31,6 +31,7 @@ Code Sensei is an intelligent code review application that helps developers impr
 - **CodeMirror 6** - Code editor component
 - **Vee-Validate/Yup** - Form validation
 - **Tailwind CSS** - Responsive styling framework
+- **highlight.js** - Syntax highlighting
 - **vue3-lottie** - Lottie animation integration
 - **nprogress** - Page loading progress bar
 - **vue-toastification** - Toast notification system
@@ -47,7 +48,6 @@ Code Sensei is an intelligent code review application that helps developers impr
 - **Deepseek API** - AI analysis engine
 - **MongoDB Atlas** - Cloud database service
 - **CORS** - Cross-origin resource sharing
-- **Express Validator** - Server-side validation
 
 ## Getting Started
 

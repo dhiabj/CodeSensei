@@ -25,7 +25,7 @@ watch(
       try {
         NProgress.start();
         const response = await reviewService.getReviewById(newId as string);
-        reviewStore.setSelectedReview(response);
+        reviewStore.setReviewResult(response.reviewResult);
         reviewStore.setCode(response.code);
         reviewStore.setSelectedLanguage(response.language);
       } catch (error) {
@@ -34,7 +34,7 @@ watch(
         NProgress.done();
       }
     } else {
-      reviewStore.clearSelectedReview();
+      reviewStore.clearReviewResult();
       reviewStore.resetCode();
       reviewStore.resetSelectedLanguage();
     }
@@ -44,7 +44,7 @@ watch(
 
 onMounted(() => {
   if (!route.params.id) {
-    reviewStore.clearSelectedReview();
+    reviewStore.clearReviewResult();
     reviewStore.resetCode();
     reviewStore.resetSelectedLanguage();
   }
@@ -73,7 +73,7 @@ const handleReviewCode = async () => {
       code: reviewStore.code,
       language: reviewStore.selectedLanguage,
     });
-    reviewStore.clearSelectedReview();
+    reviewStore.clearReviewResult();
     reviewStore.addReviewHistory(response);
     router.push({ name: "home", params: { id: response._id } });
   } catch (error) {
@@ -83,9 +83,7 @@ const handleReviewCode = async () => {
   }
 };
 
-const sanitizedReview = computed(() =>
-  DOMPurify.sanitize(reviewStore.selectedReview?.reviewResult || "")
-);
+const sanitizedReview = computed(() => DOMPurify.sanitize(reviewStore.reviewResult));
 </script>
 
 <template>

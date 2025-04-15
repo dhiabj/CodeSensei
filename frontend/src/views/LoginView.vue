@@ -8,6 +8,7 @@ import { onMounted, ref } from "vue";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.store";
 import { API_URL } from "@/api";
+import { authService } from "@/services/auth.service";
 
 const showPassword = ref(false);
 const isLoading = ref(false);
@@ -54,7 +55,8 @@ const schema = yup.object({
 const handleLogin = async (values: any) => {
   try {
     isLoading.value = true;
-    await authStore.login(values);
+    await authService.login(values);
+    authStore.setIsAuthenticated(true);
     router.push("/");
   } catch (error: any) {
     console.error(error);

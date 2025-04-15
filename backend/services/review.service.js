@@ -4,13 +4,19 @@ const { generateTitle } = require('../utils/helpers');
 async function createReview(userId, code, language, reviewResult) {
   const title = generateTitle(reviewResult);
 
-  return Review.create({
+  const review = await Review.create({
     user: userId,
     code,
     language,
     reviewResult,
     title,
   });
+
+  return {
+    _id: review._id,
+    title: review.title,
+    createdAt: review.createdAt,
+  };
 }
 
 async function getReviewHistory(userId) {

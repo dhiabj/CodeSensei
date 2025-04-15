@@ -3,7 +3,7 @@ import { defineStore } from "pinia";
 
 interface ReviewHistoryState {
   reviewHistory: Review[];
-  selectedReview: Review | null;
+  reviewResult: string;
   code: string;
   selectedLanguage: string;
 }
@@ -11,7 +11,7 @@ interface ReviewHistoryState {
 export const useReviewStore = defineStore("review", {
   state: (): ReviewHistoryState => ({
     reviewHistory: [],
-    selectedReview: null,
+    reviewResult: "",
     code: `function sum(a, b) { return a + b }`,
     selectedLanguage: "javascript",
   }),
@@ -19,14 +19,11 @@ export const useReviewStore = defineStore("review", {
     addReviewHistory(review: Review) {
       this.reviewHistory = [...this.reviewHistory, review];
     },
-    clearReviews() {
-      this.reviewHistory = [];
-    },
     setReviewHistory(reviews: Review[]) {
       this.reviewHistory = reviews;
     },
-    setSelectedReview(review: Review) {
-      this.selectedReview = review;
+    setReviewResult(result: string) {
+      this.reviewResult = result;
     },
     setCode(code: string) {
       this.code = code;
@@ -34,8 +31,8 @@ export const useReviewStore = defineStore("review", {
     setSelectedLanguage(language: string) {
       this.selectedLanguage = language;
     },
-    clearSelectedReview() {
-      this.selectedReview = null;
+    clearReviewResult() {
+      this.reviewResult = "";
     },
     resetCode() {
       this.code = `function sum(a, b) { return a + b }`;

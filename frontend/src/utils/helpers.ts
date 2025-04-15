@@ -1,5 +1,5 @@
 import type { Review } from "@/types/review";
-import moment from "moment";
+import { startOfDay, subDays, isAfter, isSameDay, parseISO } from "date-fns";
 
 export interface DateFilterGroups {
   today: Review[];
@@ -7,21 +7,26 @@ export interface DateFilterGroups {
   last7Days: Review[];
 }
 
-export function filterReviewsByDate(items: Review[]): DateFilterGroups {
-  const todayStart = moment.utc().startOf("day");
-  const yesterdayStart = moment.utc().subtract(1, "day").startOf("day");
-  const sevenDaysAgo = moment.utc().subtract(7, "days").startOf("day");
+export function filterReviewsByDate(items: Review[] = []): DateFilterGroups {
+  const now = new Date();
+  const todayStart = startOfDay(now);
+  const yesterdayStart = startOfDay(subDays(now, 1));
+  const sevenDaysAgo = startOfDay(subDays(now, 7));
 
   const groups = items.reduce(
     (groups: DateFilterGroups, item) => {
-      const createdAt = moment.utc(item.createdAt);
+      try {
+        const createdAt = parseISO(item.createdAt);
 
-      if (createdAt.isSameOrAfter(todayStart)) {
-        groups.today.push(item);
-      } else if (createdAt.isSameOrAfter(yesterdayStart)) {
-        groups.yesterday.push(item);
-      } else if (createdAt.isSameOrAfter(sevenDaysAgo)) {
-        groups.last7Days.push(item);
+        if (isSameDay(createdAt, todayStart)) {
+          groups.today.push(item);
+        } else if (isSameDay(createdAt, yesterdayStart)) {
+          groups.yesterday.push(item);
+        } else if (isAfter(createdAt, sevenDaysAgo)) {
+          groups.last7Days.push(item);
+        }
+      } catch (e) {
+        console.warn(`Invalid date for review ${item._id}: ${item.createdAt}`);
       }
 
       return groups;
@@ -30,7 +35,7 @@ export function filterReviewsByDate(items: Review[]): DateFilterGroups {
   );
 
   const sortNewToOld = (a: Review, b: Review) =>
-    moment.utc(b.createdAt).diff(moment.utc(a.createdAt));
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 
   groups.today.sort(sortNewToOld);
   groups.yesterday.sort(sortNewToOld);

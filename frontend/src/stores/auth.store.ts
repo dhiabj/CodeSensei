@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { api } from "@/api";
 import router from "@/router";
-import { authService, type AuthCredentials } from "@/services/auth.service";
 
 interface AuthState {
   isInitialized: boolean;
@@ -16,11 +15,8 @@ export const useAuthStore = defineStore("auth", {
     isAuthenticated: false,
   }),
   actions: {
-    async login(values: AuthCredentials) {
-      const response = await authService.login(values);
-      this.isAuthenticated = true;
-      router.push("/");
-      return response.message;
+    setIsAuthenticated(value: boolean) {
+      this.isAuthenticated = value;
     },
     async logout() {
       try {

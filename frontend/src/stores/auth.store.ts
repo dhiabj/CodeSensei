@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import { api } from "@/api";
-import router from "@/router";
 
 interface AuthState {
   isInitialized: boolean;
@@ -24,8 +23,7 @@ export const useAuthStore = defineStore("auth", {
       } catch (error) {
         console.error("Logout failed:", error);
       } finally {
-        this.isAuthenticated = false;
-        router.push("/login");
+        window.location.href = "/";
       }
     },
     async initialize() {

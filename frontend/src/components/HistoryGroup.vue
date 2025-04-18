@@ -18,9 +18,9 @@ const isActiveLink = (routePath: string) => route.path === routePath;
     <ul role="list" class="-mx-2 mt-2 space-y-1">
       <li v-for="review in reviews" :key="review._id">
         <RouterLink
-          :to="{ name: 'home', params: { id: review._id } }"
+          :to="{ name: 'review', params: { id: review._id } }"
           :class="[
-            isActiveLink(`/${review._id}`)
+            isActiveLink(`/review/${review._id}`)
               ? 'bg-gray-800 text-white'
               : 'hover:bg-gray-800 hover:text-white',
             'flex items-center gap-x-3 rounded-md p-2 text-sm/6 text-gray-400',

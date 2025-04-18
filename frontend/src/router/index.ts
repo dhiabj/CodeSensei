@@ -5,14 +5,21 @@ import RegisterView from "@/views/RegisterView.vue";
 import NotFoundView from "@/views/NotFoundView.vue";
 import { useAuthStore } from "@/stores/auth.store";
 import OAuthView from "@/views/OAuthView.vue";
+import ReviewView from "@/views/ReviewView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: "/:id?",
+      path: "/",
       name: "home",
       component: HomeView,
+      meta: { requiresAuth: false },
+    },
+    {
+      path: "/review/:id",
+      name: "review",
+      component: ReviewView,
       meta: { requiresAuth: true },
     },
     {
@@ -51,7 +58,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ name: "login", query: { redirect: to.fullPath } });
+    next({ name: "home" });
   } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
     next({ name: "home" });
   } else {

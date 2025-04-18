@@ -11,8 +11,8 @@ import { filterReviewsByDate } from "@/utils/helpers";
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
 import { useReviewStore } from "@/stores/review.store";
 import { useAuthStore } from "@/stores/auth.store";
-import { RouterLink } from "vue-router";
 import HistoryGroup from "./HistoryGroup.vue";
+import router from "@/router";
 
 const isLoading = ref(false);
 const reviewStore = useReviewStore();
@@ -39,6 +39,11 @@ const toggleSideBar = () => {
   isSidebarOpen.value = !isSidebarOpen.value;
 };
 
+const handleNewReview = () => {
+  reviewStore.resetReview();
+  router.push("/");
+};
+
 const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHistory));
 </script>
 
@@ -54,35 +59,35 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
         <img :class="[isSidebarOpen ? 'md:h-10' : 'md:h-8', 'h-8 w-auto']" :src="logo" alt="logo" />
       </div>
 
-      <div
+      <button
         class="flex items-center hover:bg-gray-800 text-gray-400 hover:text-white p-2 rounded-md cursor-pointer"
         v-if="isSidebarOpen"
         @click="toggleSideBar"
       >
         <Bars3CenterLeftIcon class="size-5 shrink-0" />
-      </div>
+      </button>
     </div>
 
-    <div
+    <button
       class="flex items-center hover:bg-gray-800 text-gray-400 hover:text-white p-3 rounded-md cursor-pointer"
       v-if="!isSidebarOpen"
       @click="toggleSideBar"
     >
       <Bars3CenterLeftIcon class="size-5 shrink-0" />
-    </div>
+    </button>
 
-    <RouterLink
-      to="/"
+    <button
+      @click="handleNewReview"
       :class="[
         isSidebarOpen
           ? 'w-32 rounded-md bg-[#5DC596] text-white text-sm font-semibold hover:bg-[#328a62]'
           : 'hover:bg-gray-800 text-gray-400 hover:text-white rounded-md',
-        'flex items-center p-3',
+        'flex items-center p-3 cursor-pointer',
       ]"
     >
       <CommandLineIcon class="size-5 shrink-0" />
       <span v-if="isSidebarOpen" class="ml-2">New review</span>
-    </RouterLink>
+    </button>
     <div v-if="isLoading" class="flex items-center justify-center h-full">
       <ClipLoader />
     </div>

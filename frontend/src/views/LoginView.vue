@@ -9,6 +9,7 @@ import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.store";
 import { API_URL } from "@/api";
 import { authService } from "@/services/auth.service";
+import { useReviewStore } from "@/stores/review.store";
 
 const showPassword = ref(false);
 const isLoading = ref(false);
@@ -17,6 +18,7 @@ const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const authStore = useAuthStore();
+const reviewStore = useReviewStore();
 
 onMounted(() => {
   const type = route.query.type as string;
@@ -57,6 +59,7 @@ const handleLogin = async (values: any) => {
     isLoading.value = true;
     await authService.login(values);
     authStore.setIsAuthenticated(true);
+    reviewStore.resetReview();
     router.push("/");
   } catch (error: any) {
     console.error(error);

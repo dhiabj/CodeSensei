@@ -31,13 +31,9 @@ export const useReviewStore = defineStore("review", {
     setSelectedLanguage(language: string) {
       this.selectedLanguage = language;
     },
-    clearReviewResult() {
+    resetReview() {
       this.reviewResult = "";
-    },
-    resetCode() {
       this.code = `function sum(a, b) { return a + b }`;
-    },
-    resetSelectedLanguage() {
       this.selectedLanguage = "javascript";
     },
   },

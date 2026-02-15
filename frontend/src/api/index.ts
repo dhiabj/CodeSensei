@@ -22,7 +22,7 @@ api.interceptors.response.use(
 
         // Retry original request
         return api(originalRequest);
-      } catch (refreshError) {
+      } catch {
         // Refresh failed - logout user
         const authStore = useAuthStore();
         if (authStore.isAuthenticated) await authStore.logout();

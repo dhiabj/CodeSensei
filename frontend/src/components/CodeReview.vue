@@ -20,6 +20,11 @@ const markdownItOptions = reactive({
   html: false,
   linkify: true,
   typographer: true,
+  breaks: true,
+  xhtmlOut: true,
+  enable: {
+    list: true,
+  },
   highlight: (str: string, lang: string) => {
     if (lang && hljs.getLanguage(lang)) {
       try {
@@ -92,7 +97,7 @@ const sanitizedReview = computed(() => DOMPurify.sanitize(reviewStore.reviewResu
           v-else
           :source="sanitizedReview"
           :options="markdownItOptions"
-          class="text-white"
+          class="text-white [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-4 [&_pre]:mb-4 [&_ol]:list-decimal [&_ol]:ml-6 [&_ol]:mb-4 [&_li]:mb-2 [&_li]:leading-6"
         />
       </div>
     </div>

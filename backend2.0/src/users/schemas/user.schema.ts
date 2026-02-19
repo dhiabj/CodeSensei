@@ -8,8 +8,8 @@ export class User {
   @Prop()
   email: string;
 
-  @Prop()
-  password: string;
+  @Prop({ required: false })
+  password?: string;
 
   @Prop({ type: [String], default: [] })
   refreshTokens: string[];
@@ -22,6 +22,15 @@ export class User {
 
   @Prop({ type: Date, default: null })
   emailVerificationExpires: Date | null;
+
+  @Prop({ type: String, default: null })
+  googleId: string | null;
+
+  @Prop({ type: String, default: null })
+  githubId: string | null;
+
+  @Prop({ type: String, enum: ['local', 'google', 'github'], default: 'local' })
+  provider: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

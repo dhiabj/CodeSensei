@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
@@ -12,6 +13,8 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { EmailService } from 'src/email/email.service';
 
 import { RegisterDto } from './dto/register.dto';
+import { UserDocument } from 'src/users/schemas/user.schema';
+import { OAuthUser } from './interfaces/oauth.interface';
 
 @Injectable()
 export class AuthService {
@@ -87,7 +90,7 @@ export class AuthService {
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    const isPasswordValid = await bcrypt.compare(pass, user.password!);
     if (!isPasswordValid) {
       throw new UnauthorizedException();
     }
@@ -149,6 +152,58 @@ export class AuthService {
     return {
       access_token: newAccessToken,
       refresh_token: newRefreshToken,
+    };
+  }
+
+  async validateOAuthLogin(
+    oauthUser: OAuthUser,
+  ): Promise<{ access_token: string; refresh_token: string }> {
+    let user: UserDocument | null = null;
+
+    // Check if user exists by OAuth ID
+    if (oauthUser.googleId) {
+      user = await this.usersService.findByGoogleId(oauthUser.googleId);
+    } else if (oauthUser.githubId) {
+      user = await this.usersService.findByGithubId(oauthUser.githubId);
+    }
+
+    // If not found by OAuth ID, check by email
+    if (!user) {
+      try {
+        user = await this.usersService.findByEmail(oauthUser.email);
+
+        // Update existing user with OAuth ID
+        if (oauthUser.googleId) {
+          user.googleId = oauthUser.googleId;
+        } else if (oauthUser.githubId) {
+          user.githubId = oauthUser.githubId;
+        }
+        user.isEmailVerified = true;
+
+        await user.save();
+      } catch (error) {
+        if (error instanceof NotFoundException) {
+          user = await this.usersService.createOAuthUser(oauthUser);
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    // Generate tokens
+    const payload = { sub: user._id.toString(), email: user.email };
+    const accessToken = await this.jwtService.signAsync(payload);
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+      expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION') || '7d',
+    });
+
+    // Store refresh token
+    await this.usersService.addRefreshToken(user._id.toString(), refreshToken);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 

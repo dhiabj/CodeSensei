@@ -161,4 +161,25 @@ export class UsersService {
 
     return user;
   }
+
+  async findByGoogleId(googleId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ googleId }).exec();
+  }
+
+  async findByGithubId(githubId: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ githubId }).exec();
+  }
+
+  async createOAuthUser(userData: {
+    email: string;
+    provider: string;
+    googleId?: string;
+    githubId?: string;
+  }): Promise<UserDocument> {
+    const user = new this.userModel({
+      ...userData,
+      isEmailVerified: true, // OAuth emails are pre-verified
+    });
+    return user.save();
+  }
 }

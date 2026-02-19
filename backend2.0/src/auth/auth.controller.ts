@@ -4,7 +4,6 @@ import {
   Post,
   HttpCode,
   HttpStatus,
-  Request,
   UseGuards,
   Get,
   Res,
@@ -21,13 +20,17 @@ import {
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 
-import { AuthGuard } from './auth.guard';
 import { type Request as ExpressRequest } from 'express';
 import { type Response as ExpressResponse } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { RegisterDto } from './dto/register.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { AuthGuard } from './guards/auth.guard';
+import { GoogleOAuthGuard } from './guards/google-oauth.guard';
+import { GithubOAuthGuard } from './guards/github-oauth.guard';
+import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { OAuthUser } from './interfaces/oauth.interface';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -36,6 +39,49 @@ export class AuthController {
     private authService: AuthService,
     private configService: ConfigService,
   ) {}
+
+  private setAuthCookies(
+    response: ExpressResponse,
+    accessToken: string,
+    refreshToken: string,
+  ) {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: this.configService.get('COOKIE_SECURE') === 'true',
+      sameSite:
+        (this.configService.get('COOKIE_SAME_SITE') as
+          | 'strict'
+          | 'lax'
+          | 'none') || 'strict',
+      domain: this.configService.get<string>('COOKIE_DOMAIN'),
+    };
+
+    response.cookie('access_token', accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    });
+
+    response.cookie('refresh_token', refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
+
+  private clearAuthCookies(response: ExpressResponse) {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: this.configService.get('COOKIE_SECURE') === 'true',
+      sameSite:
+        (this.configService.get('COOKIE_SAME_SITE') as
+          | 'strict'
+          | 'lax'
+          | 'none') || 'strict',
+      domain: this.configService.get<string>('COOKIE_DOMAIN'),
+    };
+
+    response.clearCookie('access_token', cookieOptions);
+    response.clearCookie('refresh_token', cookieOptions);
+  }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
@@ -149,31 +195,7 @@ export class AuthController {
       signInDto.password,
     );
 
-    // Set access token cookie (short-lived)
-    response.cookie('access_token', access_token, {
-      httpOnly: true, // Prevents JavaScript access
-      secure: this.configService.get('COOKIE_SECURE') === 'true', // HTTPS only in production
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      domain: this.configService.get('COOKIE_DOMAIN'),
-    });
-
-    // Set refresh token cookie (long-lived)
-    response.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      domain: this.configService.get('COOKIE_DOMAIN'),
-    });
+    this.setAuthCookies(response, access_token, refresh_token);
 
     return { message: 'Login successful' };
   }
@@ -211,31 +233,7 @@ export class AuthController {
     const { access_token, refresh_token } =
       await this.authService.refreshToken(refreshToken);
 
-    // Set new access token
-    response.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      maxAge: 15 * 60 * 1000,
-      domain: this.configService.get('COOKIE_DOMAIN'),
-    });
-
-    // Set new refresh token
-    response.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      domain: this.configService.get('COOKIE_DOMAIN'),
-    });
+    this.setAuthCookies(response, access_token, refresh_token);
 
     return { message: 'Token refreshed' };
   }
@@ -259,31 +257,13 @@ export class AuthController {
     const refreshToken = request.cookies['refresh_token'] as string;
 
     if (refreshToken) {
-      await this.authService.logout(request.user!.sub, refreshToken);
+      await this.authService.logout(
+        (request.user as JwtPayload).sub,
+        refreshToken,
+      );
     }
 
-    // Clear cookies
-    response.clearCookie('access_token', {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      domain: this.configService.get('COOKIE_DOMAIN'),
-    });
-
-    response.clearCookie('refresh_token', {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      domain: this.configService.get('COOKIE_DOMAIN'),
-    });
+    this.clearAuthCookies(response);
 
     return { message: 'Logged out successfully' };
   }
@@ -323,5 +303,65 @@ export class AuthController {
   })
   getProfile(@Req() request: ExpressRequest) {
     return request.user;
+  }
+
+  @Get('google')
+  @UseGuards(GoogleOAuthGuard)
+  @ApiOperation({ summary: 'Login with Google' })
+  @ApiResponse({ status: 302, description: 'Redirects to Google OAuth' })
+  async googleAuth() {
+    // Guard redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleOAuthGuard)
+  @ApiOperation({ summary: 'Google OAuth callback' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirects to frontend with tokens',
+  })
+  async googleAuthCallback(
+    @Req() request: ExpressRequest,
+    @Res({ passthrough: true }) response: ExpressResponse,
+  ) {
+    const oauthUser = request.user as OAuthUser;
+    const { access_token, refresh_token } =
+      await this.authService.validateOAuthLogin(oauthUser);
+
+    this.setAuthCookies(response, access_token, refresh_token);
+
+    // Redirect to frontend
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    response.redirect(`${frontendUrl}/auth/success`);
+  }
+
+  @Get('github')
+  @UseGuards(GithubOAuthGuard)
+  @ApiOperation({ summary: 'Login with GitHub' })
+  @ApiResponse({ status: 302, description: 'Redirects to GitHub OAuth' })
+  async githubAuth() {
+    // Guard redirects to GitHub
+  }
+
+  @Get('github/callback')
+  @UseGuards(GithubOAuthGuard)
+  @ApiOperation({ summary: 'GitHub OAuth callback' })
+  @ApiResponse({
+    status: 302,
+    description: 'Redirects to frontend with tokens',
+  })
+  async githubAuthCallback(
+    @Req() req: ExpressRequest,
+    @Res({ passthrough: true }) response: ExpressResponse,
+  ) {
+    const oauthUser = req.user as OAuthUser;
+    const { access_token, refresh_token } =
+      await this.authService.validateOAuthLogin(oauthUser);
+
+    this.setAuthCookies(response, access_token, refresh_token);
+
+    // Redirect to frontend
+    const frontendUrl = this.configService.get<string>('FRONTEND_URL');
+    response.redirect(`${frontendUrl}/auth/success`);
   }
 }

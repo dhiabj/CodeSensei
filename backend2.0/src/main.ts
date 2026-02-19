@@ -3,8 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import dns from 'dns';
 
 async function bootstrap() {
+  if (process.env.NODE_ENV !== 'production') {
+    dns.setServers(['1.1.1.1', '8.8.8.8']);
+  }
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   app.useGlobalPipes(new ValidationPipe());

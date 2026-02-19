@@ -25,6 +25,9 @@ import { AuthGuard } from './auth.guard';
 import { type Request as ExpressRequest } from 'express';
 import { type Response as ExpressResponse } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { RegisterDto } from './dto/register.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -33,6 +36,88 @@ export class AuthController {
     private authService: AuthService,
     private configService: ConfigService,
   ) {}
+
+  @HttpCode(HttpStatus.CREATED)
+  @Post('register')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully. Verification email sent.',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example:
+            'Registration successful. Please check your email to verify your account.',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'User with this email already exists',
+  })
+  @ApiBody({ type: RegisterDto })
+  register(@Body() registerDto: RegisterDto) {
+    return this.authService.register(registerDto);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-email')
+  @ApiOperation({ summary: 'Verify email address' })
+  @ApiResponse({
+    status: 200,
+    description: 'Email verified successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Email verified successfully',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification token',
+  })
+  @ApiBody({ type: VerifyEmailDto })
+  verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    return this.authService.verifyEmail(verifyEmailDto.token);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('resend-verification')
+  @ApiOperation({ summary: 'Resend verification email' })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification email sent',
+    schema: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          example: 'Verification email sent',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Email already verified',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  @ApiBody({ type: ResendVerificationDto })
+  resendVerification(@Body() resendVerificationDto: ResendVerificationDto) {
+    return this.authService.resendVerificationEmail(
+      resendVerificationDto.email,
+    );
+  }
 
   @HttpCode(HttpStatus.OK)
   @Post('login')

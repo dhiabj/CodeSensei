@@ -5,6 +5,7 @@ import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class UsersService {
@@ -12,9 +13,15 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    const emailVerificationToken = uuidv4();
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     const createdUser = new this.userModel({
       ...createUserDto,
       password: hashedPassword,
+      emailVerificationToken,
+      emailVerificationExpires,
+      isEmailVerified: false,
     });
     return createdUser.save();
   }
@@ -37,6 +44,11 @@ export class UsersService {
       throw new NotFoundException(`User with email ${email} not found`);
     }
     return user;
+  }
+
+  async existsByEmail(email: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ email }).exec();
+    return !!user;
   }
 
   async update(
@@ -105,5 +117,48 @@ export class UsersService {
         $pull: { refreshTokens: refreshToken },
       })
       .exec();
+  }
+
+  async findByVerificationToken(token: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ emailVerificationToken: token }).exec();
+  }
+
+  async verifyEmail(token: string): Promise<boolean> {
+    const user = await this.findByVerificationToken(token);
+
+    if (!user) {
+      return false;
+    }
+
+    if (
+      user.emailVerificationExpires &&
+      user.emailVerificationExpires < new Date()
+    ) {
+      return false; // Token expired
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = null;
+    user.emailVerificationExpires = null;
+    await user.save();
+
+    return true;
+  }
+
+  async updateVerificationToken(email: string): Promise<UserDocument> {
+    const user = await this.findByEmail(email);
+
+    if (user.isEmailVerified) {
+      throw new Error('Email already verified');
+    }
+
+    const emailVerificationToken = uuidv4();
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    user.emailVerificationToken = emailVerificationToken;
+    user.emailVerificationExpires = emailVerificationExpires;
+    await user.save();
+
+    return user;
   }
 }

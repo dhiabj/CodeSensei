@@ -6,6 +6,7 @@ import { CatsModule } from './cats/cats.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from './users/users.module';
     CatsModule,
     AuthModule,
     UsersModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

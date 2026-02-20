@@ -8,6 +8,7 @@ import { EmailModule } from 'src/email/email.module';
 import { PassportModule } from '@nestjs/passport';
 import { GithubStrategy } from './strategies/github.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { AuthGuard } from './guards/auth.guard';
 
 @Module({
   imports: [
@@ -16,8 +17,8 @@ import { GoogleStrategy } from './strategies/google.strategy';
     EmailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
+      global: true,
       useFactory: (configService: ConfigService) => ({
-        global: true,
         secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: configService.get('JWT_EXPIRATION') || '15m',
@@ -26,8 +27,8 @@ import { GoogleStrategy } from './strategies/google.strategy';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, GoogleStrategy, GithubStrategy],
+  providers: [AuthService, GoogleStrategy, GithubStrategy, AuthGuard],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, AuthGuard, JwtModule],
 })
 export class AuthModule {}

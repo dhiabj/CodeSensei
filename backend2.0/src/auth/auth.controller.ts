@@ -31,6 +31,8 @@ import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 import { GithubOAuthGuard } from './guards/github-oauth.guard';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { OAuthUser } from './interfaces/oauth.interface';
+import { AuthCookieHelper } from './helpers/auth-cookie.helper';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -38,50 +40,8 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private configService: ConfigService,
+    private readonly authCookieHelper: AuthCookieHelper,
   ) {}
-
-  private setAuthCookies(
-    response: ExpressResponse,
-    accessToken: string,
-    refreshToken: string,
-  ) {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      domain: this.configService.get<string>('COOKIE_DOMAIN'),
-    };
-
-    response.cookie('access_token', accessToken, {
-      ...cookieOptions,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    response.cookie('refresh_token', refreshToken, {
-      ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-  }
-
-  private clearAuthCookies(response: ExpressResponse) {
-    const cookieOptions = {
-      httpOnly: true,
-      secure: this.configService.get('COOKIE_SECURE') === 'true',
-      sameSite:
-        (this.configService.get('COOKIE_SAME_SITE') as
-          | 'strict'
-          | 'lax'
-          | 'none') || 'strict',
-      domain: this.configService.get<string>('COOKIE_DOMAIN'),
-    };
-
-    response.clearCookie('access_token', cookieOptions);
-    response.clearCookie('refresh_token', cookieOptions);
-  }
 
   @HttpCode(HttpStatus.CREATED)
   @Post('register')
@@ -135,6 +95,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 3, ttl: 300000 } })
   @Post('resend-verification')
   @ApiOperation({ summary: 'Resend verification email' })
   @ApiResponse({
@@ -166,6 +127,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @ApiOperation({ summary: 'Sign in user' })
   @ApiResponse({
@@ -195,7 +157,7 @@ export class AuthController {
       signInDto.password,
     );
 
-    this.setAuthCookies(response, access_token, refresh_token);
+    this.authCookieHelper.setAuthCookies(response, access_token, refresh_token);
 
     return { message: 'Login successful' };
   }
@@ -233,7 +195,7 @@ export class AuthController {
     const { access_token, refresh_token } =
       await this.authService.refreshToken(refreshToken);
 
-    this.setAuthCookies(response, access_token, refresh_token);
+    this.authCookieHelper.setAuthCookies(response, access_token, refresh_token);
 
     return { message: 'Token refreshed' };
   }
@@ -263,7 +225,7 @@ export class AuthController {
       );
     }
 
-    this.clearAuthCookies(response);
+    this.authCookieHelper.clearAuthCookies(response);
 
     return { message: 'Logged out successfully' };
   }
@@ -306,6 +268,7 @@ export class AuthController {
   }
 
   @Get('google')
+  @SkipThrottle()
   @UseGuards(GoogleOAuthGuard)
   @ApiOperation({ summary: 'Login with Google' })
   @ApiResponse({ status: 302, description: 'Redirects to Google OAuth' })
@@ -314,6 +277,7 @@ export class AuthController {
   }
 
   @Get('google/callback')
+  @SkipThrottle()
   @UseGuards(GoogleOAuthGuard)
   @ApiOperation({ summary: 'Google OAuth callback' })
   @ApiResponse({
@@ -328,7 +292,7 @@ export class AuthController {
     const { access_token, refresh_token } =
       await this.authService.validateOAuthLogin(oauthUser);
 
-    this.setAuthCookies(response, access_token, refresh_token);
+    this.authCookieHelper.setAuthCookies(response, access_token, refresh_token);
 
     // Redirect to frontend
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
@@ -336,6 +300,7 @@ export class AuthController {
   }
 
   @Get('github')
+  @SkipThrottle()
   @UseGuards(GithubOAuthGuard)
   @ApiOperation({ summary: 'Login with GitHub' })
   @ApiResponse({ status: 302, description: 'Redirects to GitHub OAuth' })
@@ -344,6 +309,7 @@ export class AuthController {
   }
 
   @Get('github/callback')
+  @SkipThrottle()
   @UseGuards(GithubOAuthGuard)
   @ApiOperation({ summary: 'GitHub OAuth callback' })
   @ApiResponse({
@@ -358,7 +324,7 @@ export class AuthController {
     const { access_token, refresh_token } =
       await this.authService.validateOAuthLogin(oauthUser);
 
-    this.setAuthCookies(response, access_token, refresh_token);
+    this.authCookieHelper.setAuthCookies(response, access_token, refresh_token);
 
     // Redirect to frontend
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');

@@ -25,6 +25,7 @@ import { type Request as ExpressRequest } from 'express';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { GeminiService } from 'src/gemini/gemini.service';
 import { AnalyzeCodeDto } from './dto/analyze-code.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -33,6 +34,7 @@ export class ReviewsController {
     private readonly geminiService: GeminiService,
   ) {}
 
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('analyze')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -69,6 +71,7 @@ export class ReviewsController {
   }
 
   @Post()
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)

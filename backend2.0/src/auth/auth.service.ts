@@ -25,6 +25,24 @@ export class AuthService {
     private emailService: EmailService,
   ) {}
 
+  private async generateTokens(payload: JwtPayload): Promise<{
+    access_token: string;
+    refresh_token: string;
+  }> {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(payload),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.getOrThrow('JWT_REFRESH_EXPIRATION'),
+      }),
+    ]);
+
+    return {
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    };
+  }
+
   async register(registerDto: RegisterDto): Promise<{ message: string }> {
     // Check if user already exists
     const userExists = await this.usersService.existsByEmail(registerDto.email);
@@ -97,19 +115,14 @@ export class AuthService {
 
     const payload = { sub: user._id.toString(), email: user.email };
 
-    const accessToken = await this.jwtService.signAsync(payload);
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION') || '7d',
-    });
+    const tokens = await this.generateTokens(payload);
 
-    // Store refresh token in database
-    await this.usersService.addRefreshToken(user._id.toString(), refreshToken);
+    await this.usersService.addRefreshToken(
+      user._id.toString(),
+      tokens.refresh_token,
+    );
 
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+    return tokens;
   }
 
   async refreshToken(
@@ -136,29 +149,26 @@ export class AuthService {
 
     // Generate new tokens
     const newPayload = { sub: user._id.toString(), email: user.email };
-    const newAccessToken = await this.jwtService.signAsync(newPayload);
-    const newRefreshToken = await this.jwtService.signAsync(newPayload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION') || '7d',
-    });
 
-    // Replace old refresh token with new one
+    const tokens = await this.generateTokens(newPayload);
+
     await this.usersService.replaceRefreshToken(
       user._id.toString(),
       refreshToken,
-      newRefreshToken,
+      tokens.refresh_token,
     );
 
-    return {
-      access_token: newAccessToken,
-      refresh_token: newRefreshToken,
-    };
+    return tokens;
   }
 
   async validateOAuthLogin(
     oauthUser: OAuthUser,
   ): Promise<{ access_token: string; refresh_token: string }> {
     let user: UserDocument | null = null;
+
+    if (!oauthUser.email) {
+      throw new UnauthorizedException('OAuth provider did not return email');
+    }
 
     // Check if user exists by OAuth ID
     if (oauthUser.googleId) {
@@ -192,19 +202,15 @@ export class AuthService {
 
     // Generate tokens
     const payload = { sub: user._id.toString(), email: user.email };
-    const accessToken = await this.jwtService.signAsync(payload);
-    const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION') || '7d',
-    });
 
-    // Store refresh token
-    await this.usersService.addRefreshToken(user._id.toString(), refreshToken);
+    const tokens = await this.generateTokens(payload);
 
-    return {
-      access_token: accessToken,
-      refresh_token: refreshToken,
-    };
+    await this.usersService.addRefreshToken(
+      user._id.toString(),
+      tokens.refresh_token,
+    );
+
+    return tokens;
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {

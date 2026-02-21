@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { GithubStrategy } from './strategies/github.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { AuthGuard } from './guards/auth.guard';
+import { AuthCookieHelper } from './helpers/auth-cookie.helper';
 
 @Module({
   imports: [
@@ -27,7 +28,13 @@ import { AuthGuard } from './guards/auth.guard';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, GoogleStrategy, GithubStrategy, AuthGuard],
+  providers: [
+    AuthService,
+    GoogleStrategy,
+    GithubStrategy,
+    AuthGuard,
+    AuthCookieHelper,
+  ],
   controllers: [AuthController],
   exports: [AuthService, AuthGuard, JwtModule],
 })

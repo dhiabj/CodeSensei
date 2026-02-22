@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import { RouterView, useRoute } from "vue-router";
 import { Vue3Lottie } from "vue3-lottie";
 import { useAuthStore } from "@/stores/auth.store";
 import LanguagesJSON from "@/assets/animations/LanguagesJSON.json";
 import SideBar from "@/components/SideBar.vue";
 
 const authStore = useAuthStore();
+const route = useRoute();
 </script>
 
 <template>
@@ -13,7 +14,7 @@ const authStore = useAuthStore();
     <Vue3Lottie :animationData="LanguagesJSON" :height="400" :width="400" />
   </div>
   <main v-else class="flex overflow-hidden h-screen">
-    <SideBar v-if="authStore.isAuthenticated" />
+    <SideBar v-if="route.meta.showSidebar" />
     <RouterView />
   </main>
 </template>

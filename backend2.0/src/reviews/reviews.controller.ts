@@ -24,8 +24,8 @@ import { AuthGuard } from '../auth/guards/auth.guard';
 import { type Request as ExpressRequest } from 'express';
 import { JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { GeminiService } from 'src/gemini/gemini.service';
-import { AnalyzeCodeDto } from './dto/analyze-code.dto';
-import { Throttle } from '@nestjs/throttler';
+
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @Controller('reviews')
 export class ReviewsController {
@@ -60,8 +60,8 @@ export class ReviewsController {
     status: 400,
     description: 'Invalid input',
   })
-  @ApiBody({ type: AnalyzeCodeDto })
-  async analyzeCode(@Body() analyzeCodeDto: AnalyzeCodeDto) {
+  @ApiBody({ type: CreateReviewDto })
+  async analyzeCode(@Body() analyzeCodeDto: CreateReviewDto) {
     const reviewResult = await this.geminiService.analyzeCode(
       analyzeCodeDto.code,
       analyzeCodeDto.language,
@@ -94,6 +94,7 @@ export class ReviewsController {
   }
 
   @Get()
+  @SkipThrottle()
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all reviews for the current user' })
@@ -111,6 +112,7 @@ export class ReviewsController {
   }
 
   @Get(':id')
+  @SkipThrottle()
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get a specific review by ID' })
@@ -132,6 +134,7 @@ export class ReviewsController {
   }
 
   @Patch(':id')
+  @SkipThrottle()
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a review' })
@@ -158,6 +161,7 @@ export class ReviewsController {
   }
 
   @Delete(':id')
+  @SkipThrottle()
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)

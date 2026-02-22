@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { shallowRef, computed } from "vue";
 import { Codemirror } from "vue-codemirror";
 import { javascript } from "@codemirror/lang-javascript";
@@ -10,6 +10,7 @@ import { java } from "@codemirror/lang-java";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { ChevronDownIcon } from "@heroicons/vue/16/solid";
 import { useReviewStore } from "@/stores/review.store";
+import type { EditorView } from "codemirror";
 
 const reviewStore = useReviewStore();
 
@@ -32,22 +33,24 @@ const selectedLanguage = computed({
   },
 });
 
+type Language = keyof typeof languageMap;
+
 // Dynamic extensions based on selected language
-const extensions = computed(() => [languageMap[reviewStore.selectedLanguage], oneDark]);
+const extensions = computed(() => [languageMap[reviewStore.selectedLanguage as Language], oneDark]);
 
 // Editor instance reference
 const view = shallowRef();
-const handleReady = (payload) => {
+const handleReady = (payload: { view: EditorView }) => {
   view.value = payload.view;
 };
 
 // Event logging
-const log = (eventName, event) => {
+const log = (eventName: string, event: unknown) => {
   console.log(eventName, event);
 };
 
 // Handler for Codemirror changes
-const onChange = (value) => {
+const onChange = (value: string) => {
   reviewStore.setCode(value);
 };
 </script>

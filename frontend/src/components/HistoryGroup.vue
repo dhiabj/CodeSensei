@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, RouterLink } from "vue-router";
 import CommandLineIcon from "@heroicons/vue/24/outline/CommandLineIcon";
-import type { Review } from "@/types/review";
+import type { Review } from "@/types/review.types";
 
 defineProps<{
   reviews: Review[];

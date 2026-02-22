@@ -7,8 +7,8 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @SkipThrottle()
-  @Get('health')
+  @Get()
   healthCheck() {
-    return { status: 'ok' };
+    return this.appService.getHealthCheck();
   }
 }

@@ -54,8 +54,7 @@ export class AuthController {
       properties: {
         message: {
           type: 'string',
-          example:
-            'Registration successful. Please check your email to verify your account.',
+          example: 'Check your email to verify your account.',
         },
       },
     },
@@ -95,7 +94,7 @@ export class AuthController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 3, ttl: 300000 } })
+  @Throttle({ default: { limit: 1, ttl: 60000 } })
   @Post('resend-verification')
   @ApiOperation({ summary: 'Resend verification email' })
   @ApiResponse({

@@ -3,14 +3,6 @@ import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
 
 export class CreateReviewDto {
   @ApiProperty({
-    description: 'Title of the code review',
-    example: 'User Authentication Function',
-  })
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @ApiProperty({
     description: 'Code to be reviewed',
     example: 'function authenticate(user, password) { ... }',
   })

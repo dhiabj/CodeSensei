@@ -1,5 +1,9 @@
 import { Model } from 'mongoose';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,12 +42,8 @@ export class UsersService {
     return user;
   }
 
-  async findByEmail(email: string): Promise<UserDocument> {
-    const user = await this.userModel.findOne({ email }).exec();
-    if (!user) {
-      throw new NotFoundException(`User with email ${email} not found`);
-    }
-    return user;
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ email }).exec();
   }
 
   async existsByEmail(email: string): Promise<boolean> {
@@ -148,8 +148,12 @@ export class UsersService {
   async updateVerificationToken(email: string): Promise<UserDocument> {
     const user = await this.findByEmail(email);
 
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     if (user.isEmailVerified) {
-      throw new Error('Email already verified');
+      throw new BadRequestException('Email already verified');
     }
 
     const emailVerificationToken = uuidv4();

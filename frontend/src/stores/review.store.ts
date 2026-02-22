@@ -1,4 +1,4 @@
-import type { Review } from "@/types/review";
+import type { Review } from "@/types/review.types";
 import { defineStore } from "pinia";
 
 interface ReviewHistoryState {

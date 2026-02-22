@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  ArrowLeftEndOnRectangleIcon,
   ArrowRightEndOnRectangleIcon,
   Bars3CenterLeftIcon,
   CommandLineIcon,
@@ -33,6 +34,10 @@ onMounted(async () => {
 
 const handleLogout = async () => {
   await authStore.logout();
+};
+
+const handleLogin = () => {
+  router.push("/login");
 };
 
 const toggleSideBar = () => {
@@ -102,6 +107,7 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
         </li>
 
         <div
+          v-if="authStore.isAuthenticated"
           @click="handleLogout"
           :class="[
             isSidebarOpen
@@ -110,8 +116,28 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
             'mt-auto flex items-center cursor-pointer',
           ]"
         >
-          <ArrowRightEndOnRectangleIcon class="size-5 shrink-0" />
+          <ArrowLeftEndOnRectangleIcon class="size-5 shrink-0" />
           <span class="ml-2 whitespace-nowrap" v-if="isSidebarOpen">Sign out</span>
+        </div>
+        <div
+          v-else
+          :class="[isSidebarOpen ? '-mx-6 px-6 py-3' : 'p-3 mb-3', 'mt-auto flex flex-col gap-3']"
+        >
+          <p v-if="isSidebarOpen" class="text-sm text-center font-semibold text-gray-300">
+            Log in for saved chats.
+          </p>
+          <button
+            @click="handleLogin"
+            :class="[
+              isSidebarOpen
+                ? 'w-full rounded-md bg-[#5DC596] text-white text-sm font-semibold hover:bg-[#328a62] justify-center'
+                : 'hover:bg-gray-800 text-gray-400 hover:text-white rounded-md',
+              'flex items-center p-3 cursor-pointer',
+            ]"
+          >
+            <ArrowRightEndOnRectangleIcon class="size-5 shrink-0" />
+            <span class="ml-2 whitespace-nowrap" v-if="isSidebarOpen">Log in</span>
+          </button>
         </div>
       </ul>
     </nav>

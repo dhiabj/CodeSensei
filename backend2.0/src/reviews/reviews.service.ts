@@ -5,12 +5,14 @@ import { Review, ReviewDocument } from './schemas/review.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { GeminiService } from '../gemini/gemini.service';
+import { TitleGeneratorHelper } from './helpers/title-generator.helper';
 
 @Injectable()
 export class ReviewsService {
   constructor(
     @InjectModel(Review.name) private reviewModel: Model<Review>,
     private geminiService: GeminiService,
+    private readonly titleGeneratorHelper: TitleGeneratorHelper,
   ) {}
 
   async create(
@@ -24,6 +26,7 @@ export class ReviewsService {
 
     const review = new this.reviewModel({
       ...createReviewDto,
+      title: this.titleGeneratorHelper.generateTitle(reviewResult),
       user: userId,
       language: createReviewDto.language || 'Unknown',
       reviewResult,

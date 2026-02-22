@@ -2,7 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
@@ -18,6 +18,8 @@ import { OAuthUser } from './interfaces/oauth.interface';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -54,14 +56,19 @@ export class AuthService {
     const user = await this.usersService.create(registerDto);
 
     // Send verification email
-    await this.emailService.sendVerificationEmail(
-      user.email,
-      user.emailVerificationToken!,
-    );
+    try {
+      await this.emailService.sendVerificationEmail(
+        user.email,
+        user.emailVerificationToken!,
+      );
+    } catch {
+      throw new BadRequestException(
+        'Failed to send verification email. Please try again.',
+      );
+    }
 
     return {
-      message:
-        'Registration successful. Please check your email to verify your account.',
+      message: 'Check your email to verify your account.',
     };
   }
 
@@ -76,24 +83,20 @@ export class AuthService {
   }
 
   async resendVerificationEmail(email: string): Promise<{ message: string }> {
-    try {
-      const user = await this.usersService.updateVerificationToken(email);
+    const user = await this.usersService.updateVerificationToken(email);
 
+    try {
       await this.emailService.sendVerificationEmail(
         user.email,
         user.emailVerificationToken!,
       );
-
-      return { message: 'Verification email sent' };
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.message === 'Email already verified'
-      ) {
-        throw new BadRequestException('Email already verified');
-      }
-      throw error;
+    } catch {
+      throw new BadRequestException(
+        'Failed to send verification email. Please try again.',
+      );
     }
+
+    return { message: 'Verification email sent' };
   }
 
   async signIn(
@@ -101,6 +104,10 @@ export class AuthService {
     pass: string,
   ): Promise<{ access_token: string; refresh_token: string }> {
     const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     if (!user.isEmailVerified) {
       throw new UnauthorizedException(
@@ -110,7 +117,7 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(pass, user.password!);
     if (!isPasswordValid) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { sub: user._id.toString(), email: user.email };
@@ -165,52 +172,48 @@ export class AuthService {
     oauthUser: OAuthUser,
   ): Promise<{ access_token: string; refresh_token: string }> {
     let user: UserDocument | null = null;
+    try {
+      // Check if user exists by OAuth ID
+      if (oauthUser.googleId) {
+        user = await this.usersService.findByGoogleId(oauthUser.googleId);
+      } else if (oauthUser.githubId) {
+        user = await this.usersService.findByGithubId(oauthUser.githubId);
+      }
 
-    if (!oauthUser.email) {
-      throw new UnauthorizedException('OAuth provider did not return email');
-    }
-
-    // Check if user exists by OAuth ID
-    if (oauthUser.googleId) {
-      user = await this.usersService.findByGoogleId(oauthUser.googleId);
-    } else if (oauthUser.githubId) {
-      user = await this.usersService.findByGithubId(oauthUser.githubId);
-    }
-
-    // If not found by OAuth ID, check by email
-    if (!user) {
-      try {
+      // If not found by OAuth ID, check by email
+      if (!user) {
         user = await this.usersService.findByEmail(oauthUser.email);
 
-        // Update existing user with OAuth ID
-        if (oauthUser.googleId) {
-          user.googleId = oauthUser.googleId;
-        } else if (oauthUser.githubId) {
-          user.githubId = oauthUser.githubId;
-        }
-        user.isEmailVerified = true;
+        if (user) {
+          // Update existing user with OAuth ID
+          if (oauthUser.googleId) {
+            user.googleId = oauthUser.googleId;
+          } else if (oauthUser.githubId) {
+            user.githubId = oauthUser.githubId;
+          }
+          user.isEmailVerified = true;
 
-        await user.save();
-      } catch (error) {
-        if (error instanceof NotFoundException) {
-          user = await this.usersService.createOAuthUser(oauthUser);
+          await user.save();
         } else {
-          throw error;
+          user = await this.usersService.createOAuthUser(oauthUser);
         }
       }
+
+      // Generate tokens
+      const payload = { sub: user._id.toString(), email: user.email };
+
+      const tokens = await this.generateTokens(payload);
+
+      await this.usersService.addRefreshToken(
+        user._id.toString(),
+        tokens.refresh_token,
+      );
+
+      return tokens;
+    } catch (error) {
+      this.logger.error(`OAuth Login Failed: ${error}`);
+      throw new UnauthorizedException('Authentication failed');
     }
-
-    // Generate tokens
-    const payload = { sub: user._id.toString(), email: user.email };
-
-    const tokens = await this.generateTokens(payload);
-
-    await this.usersService.addRefreshToken(
-      user._id.toString(),
-      tokens.refresh_token,
-    );
-
-    return tokens;
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {

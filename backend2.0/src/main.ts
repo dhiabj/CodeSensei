@@ -19,7 +19,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix(apiPrefix);
 
-  app.enableCors();
+  app.enableCors({
+    origin:
+      configService.get<string>('FRONTEND_URL') ?? 'http://localhost:3000',
+    credentials: true,
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
 

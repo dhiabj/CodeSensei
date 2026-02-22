@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
 import { Profile } from 'passport';
+import { OAuthUser } from '../interfaces/oauth.interface';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -26,7 +27,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const email = emails?.[0]?.value;
     const googleId = id;
 
-    const user = {
+    if (!email) {
+      throw new Error('No email associated with this Google account');
+    }
+
+    const user: OAuthUser = {
       googleId,
       email,
       provider: 'google',

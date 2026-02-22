@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-github2';
 import { ConfigService } from '@nestjs/config';
 import { Profile } from 'passport';
+import { OAuthUser } from '../interfaces/oauth.interface';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
@@ -21,7 +22,11 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     const email = emails?.[0]?.value;
     const githubId = id;
 
-    const user = {
+    if (!email) {
+      throw new Error('No email associated with this GitHub account');
+    }
+
+    const user: OAuthUser = {
       githubId,
       email,
       provider: 'github',

@@ -1,8 +1,8 @@
-<script setup>
+<script setup lang="ts">
 import { RouterLink } from "vue-router";
 </script>
 <template>
-  <main class="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8">
+  <main class="grid min-h-full place-items-center px-6 py-24 sm:py-32 lg:px-8 w-full">
     <div class="text-center">
       <p class="text-base font-semibold text-[#5DC596]">404</p>
       <h1 class="mt-4 text-5xl font-semibold tracking-tight text-balance text-white sm:text-7xl">

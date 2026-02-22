@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { api } from "@/api";
+import { authService } from "@/services/auth.service";
 
 interface AuthState {
   isInitialized: boolean;
@@ -19,7 +19,7 @@ export const useAuthStore = defineStore("auth", {
     },
     async logout() {
       try {
-        await api.post("/auth/logout");
+        await authService.logout();
       } catch (error) {
         console.error("Logout failed:", error);
       } finally {
@@ -29,10 +29,10 @@ export const useAuthStore = defineStore("auth", {
     async initialize() {
       try {
         this.isInitializing = true;
-        await api.get("/auth/protected");
+        await authService.getProfile();
         this.isInitialized = true;
         this.isAuthenticated = true;
-      } catch (error) {
+      } catch {
         this.isAuthenticated = false;
       } finally {
         this.isInitialized = true;

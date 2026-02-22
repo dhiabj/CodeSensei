@@ -2,7 +2,7 @@
 import CodeEditor from "@/components/CodeEditor.vue";
 import { computed, reactive, ref } from "vue";
 import { Vue3Lottie } from "vue3-lottie";
-import ReviewingCodeJSON from "@/assets/animations/ReviewingCodeJSON.json";
+import LiveChatbotJSON from "@/assets/animations/LiveChatbotJSON.json";
 import VueMarkdown from "vue-markdown-render";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
@@ -29,7 +29,7 @@ const markdownItOptions = reactive({
     if (lang && hljs.getLanguage(lang)) {
       try {
         return hljs.highlight(str, { language: lang }).value;
-      } catch (__) {}
+      } catch {}
     }
     return "";
   },
@@ -56,7 +56,7 @@ const sanitizedReview = computed(() => DOMPurify.sanitize(reviewStore.reviewResu
 </script>
 
 <template>
-  <div class="flex-1">
+  <div class="flex flex-col flex-1">
     <div class="grid md:grid-cols-2 h-screen">
       <!-- Left Column (Code Editor) -->
       <div class="p-4 flex flex-col gap-4">
@@ -74,23 +74,9 @@ const sanitizedReview = computed(() => DOMPurify.sanitize(reviewStore.reviewResu
       </div>
 
       <!-- Right Column (Review Results) -->
-      <div class="flex flex-col gap-2 bg-black p-6 overflow-auto">
-        <div v-if="!authStore.isAuthenticated" class="ml-auto space-x-2">
-          <RouterLink
-            to="/login"
-            class="border border-[#5DC596] text-sm font-semibold text-[#5DC596] rounded-3xl px-3 py-2 hover:text-white hover:bg-[#5DC596]"
-          >
-            Sign in
-          </RouterLink>
-          <RouterLink
-            to="/register"
-            class="border bg-white text-sm font-semibold text-[#343434] rounded-3xl px-3 py-2"
-          >
-            Sign up
-          </RouterLink>
-        </div>
+      <div class="flex flex-col bg-black p-6 overflow-auto">
         <div v-if="isLoading" class="py-6 bg-black flex h-full items-center justify-center">
-          <Vue3Lottie :animationData="ReviewingCodeJSON" :height="150" :width="150" />
+          <Vue3Lottie :animationData="LiveChatbotJSON" :height="250" :width="250" />
         </div>
 
         <VueMarkdown

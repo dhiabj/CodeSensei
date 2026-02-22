@@ -1,4 +1,4 @@
-import type { Review } from "@/types/review";
+import type { Review } from "@/types/review.types";
 import { startOfDay, subDays, isAfter, isSameDay, parseISO } from "date-fns";
 
 export interface DateFilterGroups {
@@ -31,7 +31,7 @@ export function filterReviewsByDate(items: Review[] = []): DateFilterGroups {
 
       return groups;
     },
-    { today: [], yesterday: [], last7Days: [] }
+    { today: [], yesterday: [], last7Days: [] },
   );
 
   const sortNewToOld = (a: Review, b: Review) =>

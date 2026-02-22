@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import logo from "@/assets/logo.png";
 import { useRouter } from "vue-router";
-import { Form, Field, ErrorMessage } from "vee-validate";
+import { Form, Field, ErrorMessage, type GenericObject } from "vee-validate";
 import * as yup from "yup";
 import { authService } from "@/services/auth.service";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
 import { ref } from "vue";
 import { useToast } from "vue-toastification";
+import { AxiosError } from "axios";
 
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
@@ -30,7 +31,7 @@ const schema = yup.object({
     .min(8, "Password must be at least 8 characters")
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
-      "Must contain at least one uppercase, lowercase, and number"
+      "Must contain at least one uppercase, lowercase, and number",
     ),
   confirmPassword: yup
     .string()
@@ -38,7 +39,7 @@ const schema = yup.object({
     .oneOf([yup.ref("password")], "Passwords must match"),
 });
 
-const handleRegister = async (values: any) => {
+const handleRegister = async (values: GenericObject) => {
   try {
     isLoading.value = true;
     const { message } = await authService.register({
@@ -47,9 +48,12 @@ const handleRegister = async (values: any) => {
     });
     toast.success(message);
     router.push("/login");
-  } catch (error: any) {
-    console.error(error);
-    toast.error(error.response?.data?.message || "Registration failed. Please try again.");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message || "Registration failed. Please try again.");
+    } else {
+      toast.error("Unexpected error");
+    }
   } finally {
     isLoading.value = false;
   }
@@ -175,6 +179,13 @@ const handleRegister = async (values: any) => {
           >
             Sign up
           </button>
+          <p class="mt-10 text-center text-sm/6 text-gray-400">
+            Already have an account?
+            {{ " " }}
+            <RouterLink to="/login" class="font-semibold text-[#5DC596] hover:text-[#328a62]">
+              Sign in
+            </RouterLink>
+          </p>
         </div>
       </Form>
     </div>

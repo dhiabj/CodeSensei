@@ -8,12 +8,16 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+const NO_REFRESH_URLS = ["/auth/login", "/auth/refresh"];
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthEndpoint = NO_REFRESH_URLS.some((url) => originalRequest.url?.includes(url));
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {
@@ -22,13 +26,16 @@ api.interceptors.response.use(
 
         // Retry original request
         return api(originalRequest);
-      } catch {
+      } catch (refreshError) {
         // Refresh failed - logout user
         const authStore = useAuthStore();
-        if (authStore.isAuthenticated) await authStore.logout();
+        if (authStore.isAuthenticated) {
+          await authStore.logout();
+        }
+        return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );

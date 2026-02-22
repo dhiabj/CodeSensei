@@ -1,42 +1,25 @@
 <script setup lang="ts">
 import logo from "@/assets/logo.png";
-import { RouterLink, useRoute, useRouter } from "vue-router";
+import { RouterLink, useRouter } from "vue-router";
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/vue/24/outline";
-import { onMounted, ref } from "vue";
+import { ref } from "vue";
 import { useToast } from "vue-toastification";
 import { useAuthStore } from "@/stores/auth.store";
-import { API_URL } from "@/api";
 import { authService } from "@/services/auth.service";
 import { useReviewStore } from "@/stores/review.store";
+import { AxiosError } from "axios";
+import type { GenericObject } from "vee-validate";
 
 const showPassword = ref(false);
 const isLoading = ref(false);
 
 const router = useRouter();
-const route = useRoute();
+
 const toast = useToast();
 const authStore = useAuthStore();
 const reviewStore = useReviewStore();
-
-onMounted(() => {
-  const type = route.query.type as string;
-  if (!type) return;
-  switch (type) {
-    case "confirm":
-      toast.success("Email verified successfully! You can now log in.");
-      break;
-    case "expired":
-      toast.error("Verification link expired");
-      break;
-    case "invalid":
-      toast.error("Invalid verification link");
-      break;
-    default:
-      toast.error("Email verification failed");
-  }
-});
 
 const toggleShowPassword = () => {
   showPassword.value = !showPassword.value;
@@ -50,27 +33,37 @@ const schema = yup.object({
     .min(8, "Password must be at least 8 characters")
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
-      "Must contain at least one uppercase, lowercase, and number"
+      "Must contain at least one uppercase, lowercase, and number",
     ),
 });
 
-const handleLogin = async (values: any) => {
+const handleLogin = async (values: GenericObject) => {
   try {
     isLoading.value = true;
-    await authService.login(values);
+    await authService.login({
+      email: values.email,
+      password: values.password,
+    });
     authStore.setIsAuthenticated(true);
     reviewStore.resetReview();
     router.push("/");
-  } catch (error: any) {
-    console.error(error);
-    toast.error(error.response?.data?.message || "Login failed. Please try again.");
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      toast.error(error.response?.data?.message ?? "Login failed.");
+    } else {
+      toast.error("Unexpected error");
+    }
   } finally {
     isLoading.value = false;
   }
 };
 
-const signInWithOAuthProvider = (provider: string) => {
-  window.location.href = `${API_URL}/api/auth/${provider}`;
+const signInWithOAuthProvider = (provider: "google" | "github") => {
+  if (provider === "google") {
+    authService.googleLogin();
+  } else {
+    authService.githubLogin();
+  }
 };
 </script>
 <template>

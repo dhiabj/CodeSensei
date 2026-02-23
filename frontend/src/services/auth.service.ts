@@ -1,5 +1,11 @@
 import { api } from "@/api";
-import type { AuthCredentials, AuthResponse, User } from "@/types/auth.types";
+import type {
+  AuthCredentials,
+  AuthResponse,
+  ResendVerificationPayload,
+  User,
+  VerifyEmailPayload,
+} from "@/types/auth.types";
 
 export const authService = {
   async login(credentials: AuthCredentials): Promise<AuthResponse> {
@@ -9,6 +15,16 @@ export const authService = {
 
   async register(credentials: AuthCredentials): Promise<AuthResponse> {
     const response = await api.post<AuthResponse>("/auth/register", credentials);
+    return response.data;
+  },
+
+  async verifyEmail(payload: VerifyEmailPayload): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/auth/verify-email", payload);
+    return response.data;
+  },
+
+  async resendVerificationEmail(payload: ResendVerificationPayload): Promise<AuthResponse> {
+    const response = await api.post<AuthResponse>("/auth/resend-verification", payload);
     return response.data;
   },
 

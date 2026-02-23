@@ -14,6 +14,8 @@ import type { GenericObject } from "vee-validate";
 
 const showPassword = ref(false);
 const isLoading = ref(false);
+const showResendVerification = ref(false);
+const emailForResend = ref("");
 
 const router = useRouter();
 
@@ -40,6 +42,7 @@ const schema = yup.object({
 const handleLogin = async (values: GenericObject) => {
   try {
     isLoading.value = true;
+    showResendVerification.value = false;
     await authService.login({
       email: values.email,
       password: values.password,
@@ -49,7 +52,14 @@ const handleLogin = async (values: GenericObject) => {
     router.push("/");
   } catch (error) {
     if (error instanceof AxiosError) {
-      toast.error(error.response?.data?.message ?? "Login failed.");
+      const errorMessage = error.response?.data?.message ?? "Login failed.";
+      const errorState = error.response?.status;
+      toast.error(errorMessage);
+
+      if (errorState === 401 && errorMessage.toLowerCase().includes("verify your email")) {
+        showResendVerification.value = true;
+        emailForResend.value = values.email as string;
+      }
     } else {
       toast.error("Unexpected error");
     }
@@ -153,6 +163,16 @@ const signInWithOAuthProvider = (provider: "google" | "github") => {
         {{ " " }}
         <RouterLink to="/register" class="font-semibold text-[#5DC596] hover:text-[#328a62]">
           Sign up
+        </RouterLink>
+      </p>
+      <p v-if="showResendVerification" class="mt-3 text-center text-sm/6 text-gray-300">
+        Need a new verification email?
+        {{ " " }}
+        <RouterLink
+          :to="{ path: '/resend-verification', query: { email: emailForResend } }"
+          class="font-semibold text-[#5DC596] hover:text-[#328a62]"
+        >
+          Resend link
         </RouterLink>
       </p>
       <div class="mt-6 grid grid-cols-2 gap-4">

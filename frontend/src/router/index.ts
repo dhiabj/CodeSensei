@@ -6,6 +6,8 @@ import NotFoundView from "@/views/NotFoundView.vue";
 import { useAuthStore } from "@/stores/auth.store";
 import ReviewView from "@/views/ReviewView.vue";
 import AuthSuccessView from "@/views/AuthSuccessView.vue";
+import VerifyEmailView from "@/views/VerifyEmailView.vue";
+import ResendVerificationView from "@/views/ResendVerificationView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,6 +41,18 @@ const router = createRouter({
       name: "auth-success",
       meta: { requiresGuest: true, showSidebar: false },
       component: AuthSuccessView,
+    },
+    {
+      path: "/verify-email",
+      name: "verify-email",
+      component: VerifyEmailView,
+      meta: { requiresGuest: true, showSidebar: false },
+    },
+    {
+      path: "/resend-verification",
+      name: "resend-verification",
+      component: ResendVerificationView,
+      meta: { requiresGuest: true, showSidebar: false },
     },
     {
       path: "/:catchAll(.*)",

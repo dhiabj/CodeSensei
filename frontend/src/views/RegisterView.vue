@@ -47,7 +47,10 @@ const handleRegister = async (values: GenericObject) => {
       password: values.password,
     });
     toast.success(message);
-    router.push("/login");
+    router.push({
+      path: "/resend-verification",
+      query: { email: values.email },
+    });
   } catch (error) {
     if (error instanceof AxiosError) {
       toast.error(error.response?.data?.message || "Registration failed. Please try again.");

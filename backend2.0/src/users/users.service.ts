@@ -37,7 +37,7 @@ export class UsersService {
   async findOne(id: string): Promise<UserDocument> {
     const user = await this.userModel.findById(id).exec();
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found.`);
     }
     return user;
   }
@@ -59,7 +59,7 @@ export class UsersService {
       .findByIdAndUpdate(id, updateUserDto, { new: true })
       .exec();
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found.`);
     }
     return user;
   }
@@ -67,7 +67,7 @@ export class UsersService {
   async remove(id: string): Promise<UserDocument> {
     const user = await this.userModel.findByIdAndDelete(id).exec();
     if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException(`User with ID ${id} not found.`);
     }
     return user;
   }
@@ -149,11 +149,11 @@ export class UsersService {
     const user = await this.findByEmail(email);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Email not found.');
     }
 
     if (user.isEmailVerified) {
-      throw new BadRequestException('Email already verified');
+      throw new BadRequestException('Email already verified.');
     }
 
     const emailVerificationToken = uuidv4();

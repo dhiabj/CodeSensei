@@ -49,7 +49,7 @@ export class AuthService {
     // Check if user already exists
     const userExists = await this.usersService.existsByEmail(registerDto.email);
     if (userExists) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException('User with this email already exists.');
     }
 
     // Create user
@@ -76,10 +76,10 @@ export class AuthService {
     const isVerified = await this.usersService.verifyEmail(token);
 
     if (!isVerified) {
-      throw new BadRequestException('Invalid or expired verification token');
+      throw new BadRequestException('Invalid or expired verification token.');
     }
 
-    return { message: 'Email verified successfully' };
+    return { message: 'Email verified successfully.' };
   }
 
   async resendVerificationEmail(email: string): Promise<{ message: string }> {
@@ -96,7 +96,7 @@ export class AuthService {
       );
     }
 
-    return { message: 'Verification email sent' };
+    return { message: 'Verification email sent.' };
   }
 
   async signIn(
@@ -106,18 +106,18 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials.');
     }
 
     if (!user.isEmailVerified) {
       throw new UnauthorizedException(
-        'Please verify your email before logging in',
+        'Please verify your email before logging in.',
       );
     }
 
     const isPasswordValid = await bcrypt.compare(pass, user.password!);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Invalid credentials.');
     }
 
     const payload = { sub: user._id.toString(), email: user.email };
@@ -151,7 +151,7 @@ export class AuthService {
     );
 
     if (!tokenExists) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Invalid refresh token.');
     }
 
     // Generate new tokens
@@ -212,7 +212,7 @@ export class AuthService {
       return tokens;
     } catch (error) {
       this.logger.error(`OAuth Login Failed: ${error}`);
-      throw new UnauthorizedException('Authentication failed');
+      throw new UnauthorizedException('Authentication failed.');
     }
   }
 

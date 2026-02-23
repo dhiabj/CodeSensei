@@ -6,7 +6,7 @@ import {
   CommandLineIcon,
 } from "@heroicons/vue/24/outline";
 import logo from "@/assets/logo.png";
-import { computed, onMounted, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { reviewService } from "@/services/review.service";
 import { filterReviewsByDate } from "@/utils/helpers";
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
@@ -20,17 +20,24 @@ const reviewStore = useReviewStore();
 const authStore = useAuthStore();
 const isSidebarOpen = ref(true);
 
-onMounted(async () => {
-  isLoading.value = true;
-  try {
-    const response = await reviewService.getReviewHistory();
-    reviewStore.setReviewHistory(response);
-  } catch (error) {
-    console.error("Error fetching review history:", error);
-  } finally {
-    isLoading.value = false;
-  }
-});
+watch(
+  () => authStore.isAuthenticated,
+  async (isAuth) => {
+    if (!isAuth) return;
+
+    isLoading.value = true;
+
+    try {
+      const response = await reviewService.getReviewHistory();
+      reviewStore.setReviewHistory(response);
+    } catch (error) {
+      console.error("Error fetching review history:", error);
+    } finally {
+      isLoading.value = false;
+    }
+  },
+  { immediate: true },
+);
 
 const handleLogout = async () => {
   await authStore.logout();

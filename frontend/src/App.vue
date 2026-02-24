@@ -15,6 +15,6 @@ const route = useRoute();
   </div>
   <main v-else class="flex overflow-hidden h-screen">
     <SideBar v-if="route.meta.showSidebar" />
-    <RouterView />
+    <RouterView class="flex-1 min-w-0" />
   </main>
 </template>

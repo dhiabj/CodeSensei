@@ -4,7 +4,7 @@
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://code-sensei-five.vercel.app/) 
 
-Code Sensei is an intelligent code review application that helps developers improve their code quality through AI-powered analysis. Built with modern web technologies, it supports multiple programming languages and provides actionable feedback using Deepseek's AI capabilities.
+Code Sensei is an intelligent code review application that helps developers improve their code quality through AI-powered analysis. Built with modern web technologies, it supports multiple programming languages and provides actionable feedback using Google Gemini's AI capabilities.
 
 ## Features
 
@@ -16,11 +16,11 @@ Code Sensei is an intelligent code review application that helps developers impr
 - ✅ Client-side form validation with Vee-Validate/Yup
 - 🎨 Syntax highlighting & dark theme support
 - 🏪 Centralized state management with Pinia
-- 📝 Real-time code analysis feedback
 - 🗄️ MongoDB storage for user data & histories
 - 📊 Clean and responsive UI with Tailwind CSS
 - 🔐 Secure code processing with DOMPurify
 - 📚 Markdown-formatted review results
+- 🧱 Modular and scalable backend architecture with NestJS
 
 ## Technologies
 
@@ -40,26 +40,29 @@ Code Sensei is an intelligent code review application that helps developers impr
 
 ### Backend
 - **Node.js** - Runtime environment
-- **Express.js** - Web framework with middleware
+- **NestJS** - Progressive Node.js framework with modular architecture
 - **Passport.js** - Google & GitHub authentication
 - **Mongoose** - MongoDB object modeling
 - **JWT** - Secure token authentication
-- **Nodemailer** - Email verification system
-- **Deepseek API** - AI analysis engine
+- **Google Gemini API** - AI-powered code analysis engine
+- **Brevo** - Email verification system
+- **CORS** - Cross-origin resource sharing
+- **Class Validator & DTOs** - Request validation
 - **MongoDB Atlas** - Cloud database service
 - **CORS** - Cross-origin resource sharing
+- **Guards & Interceptors** - Route protection and request handling
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js ≥18.x
-- npm ≥9.x
-- Deepseek API key
-- MongoDB Atlas URI
-- Google OAuth Client ID/Secret
-- GitHub OAuth Client ID/Secret
-- JWT Secret Key
-- credentials for email service
+- Node.js ≥18.x  
+- npm ≥9.x  
+- Google Gemini API Key  
+- MongoDB Atlas URI  
+- Google OAuth Client ID/Secret  
+- GitHub OAuth Client ID/Secret  
+- JWT Secret Key  
+- Email service credentials  
 
 ### Installation
 
@@ -81,7 +84,7 @@ cp frontend/.env.example frontend/.env
 3. **Install dependencies**
 ```bash
 # Install backend dependencies
-cd backend
+cd backend2.0
 npm install
 
 # Install frontend dependencies
@@ -92,7 +95,7 @@ npm install
 4. **Start development servers**
 ```bash
 # Run backend (from backend directory)
-nodemon server
+npm run start:dev
 
 # Run frontend (from frontend directory)
 npm run dev

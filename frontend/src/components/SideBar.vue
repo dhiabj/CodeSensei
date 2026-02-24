@@ -4,9 +4,10 @@ import {
   ArrowRightEndOnRectangleIcon,
   Bars3CenterLeftIcon,
   CommandLineIcon,
+  XMarkIcon,
 } from "@heroicons/vue/24/outline";
 import logo from "@/assets/logo.png";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { reviewService } from "@/services/review.service";
 import { filterReviewsByDate } from "@/utils/helpers";
 import ClipLoader from "vue-spinner/src/ClipLoader.vue";
@@ -14,11 +15,15 @@ import { useReviewStore } from "@/stores/review.store";
 import { useAuthStore } from "@/stores/auth.store";
 import HistoryGroup from "./HistoryGroup.vue";
 import router from "@/router";
+import { useRoute } from "vue-router";
 
 const isLoading = ref(false);
 const reviewStore = useReviewStore();
 const authStore = useAuthStore();
-const isSidebarOpen = ref(true);
+const route = useRoute();
+const isDesktop = ref(false);
+const isDesktopSidebarOpen = ref(true);
+const isMobileSidebarOpen = ref(false);
 
 watch(
   () => authStore.isAuthenticated,
@@ -48,7 +53,11 @@ const handleLogin = () => {
 };
 
 const toggleSideBar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value;
+  if (isDesktop.value) {
+    isDesktopSidebarOpen.value = !isDesktopSidebarOpen.value;
+    return;
+  }
+  isMobileSidebarOpen.value = !isMobileSidebarOpen.value;
 };
 
 const handleNewReview = () => {
@@ -57,13 +66,60 @@ const handleNewReview = () => {
 };
 
 const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHistory));
+
+const isSidebarOpen = computed(() => (isDesktop.value ? isDesktopSidebarOpen.value : true));
+
+const updateViewport = () => {
+  isDesktop.value = window.innerWidth >= 640;
+  if (isDesktop.value) {
+    isMobileSidebarOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  updateViewport();
+  window.addEventListener("resize", updateViewport);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("resize", updateViewport);
+});
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (!isDesktop.value) {
+      isMobileSidebarOpen.value = false;
+    }
+  },
+);
 </script>
 
 <template>
+  <button
+    v-if="!isDesktop && !isMobileSidebarOpen"
+    class="fixed right-4 top-4 z-40 flex items-center justify-center rounded-md bg-gray-900 p-2 text-gray-300 hover:text-white"
+    @click="isMobileSidebarOpen = true"
+    aria-label="Open sidebar"
+  >
+    <Bars3CenterLeftIcon class="size-5 shrink-0" />
+  </button>
+
   <div
+    v-if="!isDesktop && isMobileSidebarOpen"
+    class="fixed inset-0 z-30 bg-black/50 sm:hidden"
+    @click="isMobileSidebarOpen = false"
+  />
+
+  <div
+    v-if="isDesktop || isMobileSidebarOpen"
     :class="[
-      isSidebarOpen ? 'w-64 px-6' : 'w-20 items-center',
-      'hidden sm:flex flex-col gap-y-5 overflow-y-auto overflow-x-hidden bg-gray-900 relative transition-all duration-300 ease-in-out',
+      isDesktop
+        ? isSidebarOpen
+          ? 'w-64 px-6'
+          : 'w-20 items-center'
+        : 'fixed inset-y-0 left-0 z-40 w-64 px-6',
+      'flex flex-col gap-y-5 overflow-y-auto overflow-x-hidden bg-gray-900 relative transition-all duration-300 ease-in-out',
     ]"
   >
     <div class="flex items-center justify-between">
@@ -73,16 +129,17 @@ const groupedReviews = computed(() => filterReviewsByDate(reviewStore.reviewHist
 
       <button
         class="flex items-center hover:bg-gray-800 text-gray-400 hover:text-white p-2 rounded-md cursor-pointer"
-        v-if="isSidebarOpen"
+        v-if="isSidebarOpen || !isDesktop"
         @click="toggleSideBar"
       >
-        <Bars3CenterLeftIcon class="size-5 shrink-0" />
+        <Bars3CenterLeftIcon v-if="isDesktop" class="size-5 shrink-0" />
+        <XMarkIcon v-else class="size-5 shrink-0" />
       </button>
     </div>
 
     <button
       class="flex items-center hover:bg-gray-800 text-gray-400 hover:text-white p-3 rounded-md cursor-pointer"
-      v-if="!isSidebarOpen"
+      v-if="isDesktop && !isSidebarOpen"
       @click="toggleSideBar"
     >
       <Bars3CenterLeftIcon class="size-5 shrink-0" />

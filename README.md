@@ -11,7 +11,7 @@ Code Sensei is an intelligent code review application that helps developers impr
 - 🖥️ Multi-language code editor (JavaScript, Python, Java, PHP, CSS, HTML)
 - 👥 OAuth authentication (Google & GitHub)
 - 📋 Sidebar with code review histories
-- 🤖 AI-powered code reviews using Deepseek API
+- 🤖 AI-powered code reviews using Google Gemini API
 - 🔒 Secure routes with JWT & middleware protection
 - ✅ Client-side form validation with Vee-Validate/Yup
 - 🎨 Syntax highlighting & dark theme support

@@ -43,8 +43,15 @@ const handleReviewCode = async () => {
       code: reviewStore.code,
       language: reviewStore.selectedLanguage,
     });
-    reviewStore.setReviewResult(response.reviewResult);
-    if (authStore.isAuthenticated) reviewStore.addReviewHistory(response);
+
+    const { _id, reviewResult, title, createdAt } = response;
+    reviewStore.setReviewResult(reviewResult);
+    if (authStore.isAuthenticated)
+      reviewStore.addReviewHistory({
+        _id,
+        title,
+        createdAt,
+      });
   } catch (error) {
     console.error("Error fetching review:", error);
   } finally {

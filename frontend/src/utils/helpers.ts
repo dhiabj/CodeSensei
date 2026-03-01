@@ -1,13 +1,13 @@
-import type { Review } from "@/types/review.types";
+import type { ReviewHistoryItem } from "@/types/review.types";
 import { startOfDay, subDays, isAfter, isSameDay, parseISO } from "date-fns";
 
 export interface DateFilterGroups {
-  today: Review[];
-  yesterday: Review[];
-  last7Days: Review[];
+  today: ReviewHistoryItem[];
+  yesterday: ReviewHistoryItem[];
+  last7Days: ReviewHistoryItem[];
 }
 
-export function filterReviewsByDate(items: Review[] = []): DateFilterGroups {
+export function filterReviewsByDate(items: ReviewHistoryItem[] = []): DateFilterGroups {
   const now = new Date();
   const todayStart = startOfDay(now);
   const yesterdayStart = startOfDay(subDays(now, 1));
@@ -25,7 +25,7 @@ export function filterReviewsByDate(items: Review[] = []): DateFilterGroups {
         } else if (isAfter(createdAt, sevenDaysAgo)) {
           groups.last7Days.push(item);
         }
-      } catch (e) {
+      } catch {
         console.warn(`Invalid date for review ${item._id}: ${item.createdAt}`);
       }
 
@@ -34,7 +34,7 @@ export function filterReviewsByDate(items: Review[] = []): DateFilterGroups {
     { today: [], yesterday: [], last7Days: [] },
   );
 
-  const sortNewToOld = (a: Review, b: Review) =>
+  const sortNewToOld = (a: ReviewHistoryItem, b: ReviewHistoryItem) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 
   groups.today.sort(sortNewToOld);

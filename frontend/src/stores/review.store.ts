@@ -1,8 +1,8 @@
-import type { Review } from "@/types/review.types";
+import type { ReviewHistoryItem } from "@/types/review.types";
 import { defineStore } from "pinia";
 
 interface ReviewHistoryState {
-  reviewHistory: Review[];
+  reviewHistory: ReviewHistoryItem[];
   reviewResult: string;
   code: string;
   selectedLanguage: string;
@@ -16,10 +16,10 @@ export const useReviewStore = defineStore("review", {
     selectedLanguage: "javascript",
   }),
   actions: {
-    addReviewHistory(review: Review) {
+    addReviewHistory(review: ReviewHistoryItem) {
       this.reviewHistory = [...this.reviewHistory, review];
     },
-    setReviewHistory(reviews: Review[]) {
+    setReviewHistory(reviews: ReviewHistoryItem[]) {
       this.reviewHistory = reviews;
     },
     setReviewResult(result: string) {

@@ -111,6 +111,22 @@ export class ReviewsController {
     return this.reviewsService.findAll(userId);
   }
 
+  @Get('history')
+  @SkipThrottle()
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get review history (id + title + createdAt)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Returns review metadata for sidebar',
+  })
+  findHistory(@Req() request: ExpressRequest) {
+    const userId = (request.user as JwtPayload).sub;
+    return this.reviewsService.findHistory(userId);
+  }
+
   @Get(':id')
   @SkipThrottle()
   @UseGuards(AuthGuard)

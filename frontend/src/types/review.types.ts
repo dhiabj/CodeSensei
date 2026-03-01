@@ -6,3 +6,9 @@ export interface Review {
   title: string;
   createdAt: string;
 }
+
+export interface ReviewHistoryItem {
+  _id: string;
+  title: string;
+  createdAt: string;
+}

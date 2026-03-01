@@ -83,4 +83,13 @@ export class ReviewsService {
 
     return review;
   }
+
+  async findHistory(userId: string) {
+    return this.reviewModel
+      .find({ user: userId })
+      .select('_id title createdAt')
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+  }
 }

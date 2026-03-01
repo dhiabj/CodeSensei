@@ -1,6 +1,6 @@
 import { api } from "@/api";
 import { useAuthStore } from "@/stores/auth.store";
-import type { Review } from "@/types/review.types";
+import type { Review, ReviewHistoryItem } from "@/types/review.types";
 
 export const reviewService = {
   async reviewCode({ code, language }: { code: string; language: string }): Promise<Review> {
@@ -14,8 +14,8 @@ export const reviewService = {
     }
   },
 
-  async getReviewHistory(): Promise<Review[]> {
-    const response = await api.get<Review[]>("/reviews");
+  async getReviewHistory(): Promise<ReviewHistoryItem[]> {
+    const response = await api.get<ReviewHistoryItem[]>("/reviews/history");
     return response.data;
   },
 

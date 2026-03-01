@@ -10,7 +10,7 @@ import logo from "@/assets/logo.png";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { reviewService } from "@/services/review.service";
 import { filterReviewsByDate } from "@/utils/helpers";
-import ClipLoader from "vue-spinner/src/ClipLoader.vue";
+
 import { useReviewStore } from "@/stores/review.store";
 import { useAuthStore } from "@/stores/auth.store";
 import HistoryGroup from "./HistoryGroup.vue";
@@ -158,7 +158,9 @@ watch(
       <span v-if="isSidebarOpen" class="ml-2">New review</span>
     </button>
     <div v-if="isLoading" class="flex items-center justify-center h-full">
-      <ClipLoader />
+      <div
+        class="animate-spin h-6 w-6 border-4 border-[#5DC596] border-t-transparent rounded-full"
+      />
     </div>
     <nav v-else class="flex flex-1 flex-col">
       <ul role="list" class="flex flex-1 flex-col">

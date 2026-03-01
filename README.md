@@ -46,7 +46,6 @@ Code Sensei is an intelligent code review application that helps developers impr
 - **JWT** - Secure token authentication
 - **Google Gemini API** - AI-powered code analysis engine
 - **Brevo** - Email verification system
-- **CORS** - Cross-origin resource sharing
 - **Class Validator & DTOs** - Request validation
 - **MongoDB Atlas** - Cloud database service
 - **CORS** - Cross-origin resource sharing
@@ -75,7 +74,7 @@ cd CodeSensei
 2. **Configure environment**
 ```bash
 # Backend configuration
-cp backend/.env.example backend/.env
+cp backend2.0/.env.example backend2.0/.env
 
 # Frontend configuration
 cp frontend/.env.example frontend/.env
@@ -88,7 +87,7 @@ cd backend2.0
 npm install
 
 # Install frontend dependencies
-cd ../frontend
+cd frontend
 npm install
 ```
 

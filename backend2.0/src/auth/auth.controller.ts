@@ -230,6 +230,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
+  @SkipThrottle()
   @Get('profile')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
